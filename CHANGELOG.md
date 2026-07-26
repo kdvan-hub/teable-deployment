@@ -11,6 +11,13 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## Unreleased
 
+- **Console: the Git Repos page no longer blocks on repository-size scans.**
+  The repo listing recomputes per-repo sizes with a full directory scan that can
+  take tens of seconds on networked storage; once its 5-minute cache expired the
+  next page load paid the whole scan. The listing now serves the previous stats
+  immediately and rescans in the background, and the git-registry pre-warms the
+  cache on startup, so page loads stay fast right after a deploy too. Sizes may
+  be up to one scan-cycle stale. No action needed.
 - **Console: one unhealthy node no longer stalls the Sandboxes/Cluster pages.**
   Cluster status collected per-node PVC usage through the kubelet
   `stats/summary` proxy with no dedicated timeout; when a node's kubelet
