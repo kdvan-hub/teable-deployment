@@ -9,6 +9,44 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Helm: sandbox bin-packing scheduling (`global.sandboxScheduling.packing`).**
+  New sandboxes now prefer the fullest node instead of spreading across nodes,
+  so clusters run fewer, fuller nodes. Placement-only change for newly created
+  sandboxes; set `packing.enabled: false` to keep the old spread. No action needed.
+- **Helm: central sandbox scheduling requests (`global.sandboxScheduling.memoryRequest` / `cpuRequest`).**
+  Sets the per-sandbox scheduling requests in one place; per-node sandbox
+  capacity then derives from allocatable memory. Unset by default (existing
+  behavior preserved). No action needed.
+- **Helm: warm-capacity balloon pods (`global.sandboxScheduling.headroom.replicas`).**
+  Low-priority placeholder pods pre-hold sandbox slots so a new sandbox starts
+  instantly while node provisioning happens in the background. Balloons are
+  sized from `sandboxScheduling.memoryRequest`/`cpuRequest` (one balloon = one
+  sandbox slot) and deploy into the sandbox namespace (`sandboxNamespace.name`).
+  Default 0; enable only together with a cluster autoscaler. Air-gapped
+  installs must mirror the pause image (`headroom.image`) first. No action needed.
+- **Helm: node memory backpressure (`global.sandboxScheduling.backpressure`).**
+  infra-service now cordons dedicated sandbox nodes (NoSchedule taint) at 90%
+  node memory and uncordons at 80%. It acts only on nodes labeled
+  `teable.io/node-pool=sandbox`, so clusters without that label are unaffected;
+  requires metrics-server and the node patch grant included when
+  `infraService.rbac.clusterScope.create` is true. An optional
+  `global.sandboxScheduling.memoryLimit` adds a default per-sandbox memory cap
+  (unset by default). Set `backpressure.enabled: false` to opt out — leftover
+  backpressure taints are swept automatically on the next service start. Make
+  sure sandbox pod tolerations do not use a blanket `operator: Exists`, which
+  would defeat the backpressure taint. No action needed.
+- **Measured effect of the scheduling changes (our fleet, 4-core/32 GiB dedicated sandbox nodes).**
+  Per-node sandbox capacity is now derived from allocatable memory — 42 sandboxes
+  per node at the 700 Mi `memoryRequest` we run — instead of being silently capped
+  by CPU requests. Nodes fill up before a new one is added, and a drained node is
+  reclaimed within minutes (6.5 min measured round-trip), where previously every
+  load peak left one extra node running permanently. Net for us: the steady-state
+  sandbox pool went from two always-on nodes to one — roughly half the sandbox
+  compute cost — with unchanged sandbox performance. Your numbers depend on node
+  size and `memoryRequest`; treat these as a reference point. No action needed.
+
 ## v2026.7.14 - 2026-07-26
 
 ### Teable release.2026-07-26T01-04-56Z.2377

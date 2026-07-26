@@ -43,6 +43,12 @@ rules:
   - apiGroups: [""]
     resources: ["nodes/proxy"]
     verbs: ["get"]
+  # Sandbox memory backpressure (global.sandboxScheduling.backpressure):
+  # taint/untaint dedicated sandbox nodes. Rendered unconditionally so that
+  # disabling the feature can still sweep leftover taints on startup.
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["patch"]
   # ACK cloud-disk autoscaler policy (GKE lacks this API group; the rule exists but is inert)
   - apiGroups: ["storage.alibabacloud.com"]
     resources: ["storageautoscalerpolicies"]

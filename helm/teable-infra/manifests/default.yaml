@@ -137,7 +137,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -232,7 +232,7 @@ metadata:
   name: opensandbox-server-config
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -275,29 +275,37 @@ data:
     gateway.address = "*.sandbox.teable.example.org"
     gateway.route.mode = "wildcard"
   batchsandbox-template.yaml: |
-    # Metadata template (merged with runtime-generated metadata)
-    metadata:
-    # Spec template
+    metadata: null
     spec:
       replicas: 1
       template:
         spec:
+          affinity:
+            podAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: opensandbox.io/id
+                      operator: Exists
+                  topologyKey: kubernetes.io/hostname
+                weight: 100
+          containers:
+          - name: sandbox
+            volumeMounts:
+            - mountPath: /home/agent/workspace-state
+              name: workspace-state
           restartPolicy: Never
           securityContext:
-            runAsUser: 0
-            runAsGroup: 0
             fsGroup: 0
             fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 0
+            runAsUser: 0
             seccompProfile:
               type: Unconfined
-          containers:
-            - name: sandbox
-              volumeMounts:
-                - name: workspace-state
-                  mountPath: /home/agent/workspace-state
           volumes:
-            - name: workspace-state
-              emptyDir: {}
+          - emptyDir: {}
+            name: workspace-state
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -558,7 +566,7 @@ kind: ClusterRole
 metadata:
   name: opensandbox-server-role
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -687,6 +695,12 @@ rules:
   verbs:
   - get
 - apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - patch
+- apiGroups:
   - storage.alibabacloud.com
   resources:
   - storageautoscalerpolicies
@@ -789,7 +803,7 @@ kind: ClusterRoleBinding
 metadata:
   name: opensandbox-server-rolebinding
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -1218,7 +1232,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -1240,7 +1254,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -1572,7 +1586,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -1634,7 +1648,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -1651,7 +1665,7 @@ spec:
     metadata:
       annotations:
         checksum/config-toml: 021b7064c7a4f874b83e7da06d399c5cfa8971eab7cc715a02ecdec429751ef8
-        checksum/batchsandbox-template: bf1caf1b588a88e298710c18206c85db07f5b5ea7f04662da8bb4ee76394cd33
+        checksum/batchsandbox-template: c1e2c364bbfee5f6fd2a80f821ca6412e7c3675ec3d0aa18b83f64a42b144e3a
       labels:
         app.kubernetes.io/name: opensandbox-server
         app.kubernetes.io/instance: teable
@@ -1868,6 +1882,18 @@ spec:
           value: '5'
         - name: HISTORY_WINDOW_SECONDS
           value: '600'
+        - name: SANDBOX_BACKPRESSURE_ENABLED
+          value: 'true'
+        - name: SANDBOX_BACKPRESSURE_NODE_SELECTOR
+          value: teable.io/node-pool=sandbox
+        - name: SANDBOX_BACKPRESSURE_HIGH_PERCENT
+          value: '90'
+        - name: SANDBOX_BACKPRESSURE_LOW_PERCENT
+          value: '80'
+        - name: SANDBOX_BACKPRESSURE_INTERVAL_SECONDS
+          value: '30'
+        - name: SANDBOX_BACKPRESSURE_TAINT_KEY
+          value: sandbox.teable.io/memory-pressure
         - name: FILE_BROWSER_ENABLED
           value: 'true'
         - name: FILE_BROWSER_ROOT
@@ -2421,7 +2447,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -2455,7 +2481,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -2644,7 +2670,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -2665,7 +2691,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.1.0
+    helm.sh/chart: opensandbox-server-0.2.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway

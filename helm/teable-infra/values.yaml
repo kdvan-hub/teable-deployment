@@ -117,6 +117,61 @@ global:
   # the routing contract for the entry operator.
   entry:
     mode: ""
+  # ---- Sandbox scheduling v2 (docs/sandbox-scheduling-v2.md) ----
+  # One knob shared by this chart (headroom balloons, backpressure loop) and the
+  # opensandbox-server sub-chart (pod template merge, request envs). Defaults
+  # preserve existing behavior except packing, which only changes where NEW
+  # sandboxes land (rollback: packing.enabled=false).
+  sandboxScheduling:
+    # Bin-packing: prefer the fullest node instead of the scheduler's default
+    # spread. Merged into batchSandboxTemplate at render time; an operator
+    # template wins on conflicts.
+    packing:
+      enabled: true
+    # Scheduling currency: rendered as OPENSANDBOX_K8S_SANDBOX_REQUEST_* envs on
+    # opensandbox-server (explicit server.env entries still win). Empty = keep
+    # current behavior. Keep cpuRequest small (<=50m) so memory stays the
+    # binding constraint on small nodes.
+    memoryRequest: ""
+    cpuRequest: ""
+    # Default per-sandbox memory limit merged into the template's sandbox
+    # container; create requests carrying explicit resourceLimits take
+    # precedence. Empty = no default limit (existing behavior).
+    memoryLimit: ""
+    # Balloon pods pre-holding warm sandbox slots (preempted instantly by real
+    # sandboxes). Only useful WITH a cluster autoscaler; without one they just
+    # sit Pending. Rendering a PriorityClass requires cluster-scope apply
+    # permissions.
+    headroom:
+      replicas: 0
+      # Empty: follows sandboxNamespace.name (the sandbox dataplane namespace).
+      namespace: ""
+      # Mirrored in images/public-images.lock.yaml for air-gapped installs.
+      image: "registry.k8s.io/pause:3.10"
+      priorityClassValue: -10
+      # Empty: a balloon holds exactly one sandbox slot, so these follow
+      # sandboxScheduling.memoryRequest/cpuRequest (fallback 700Mi/50m).
+      requests:
+        cpu: ""
+        memory: ""
+      nodeSelector: {}
+      tolerations:
+        - key: "sandbox"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+    # Memory watermark backpressure (runs inside infra-service): taint matching
+    # nodes NoSchedule at highPercent, untaint at lowPercent (hysteresis). Acts
+    # ONLY on nodes matching nodeSelector — clusters without a dedicated
+    # sandbox pool label are unaffected. Requires the node patch RBAC rendered
+    # when infraService.rbac.clusterScope.create is true; needs metrics-server.
+    backpressure:
+      enabled: true
+      nodeSelector: "teable.io/node-pool=sandbox"
+      highPercent: 90
+      lowPercent: 80
+      intervalSeconds: 30
+      taintKey: "sandbox.teable.io/memory-pressure"
   # GKE-specific keys consumed by infra-service (all optional; leave unset on other platforms):
   # projectId: my-gcp-project    # GCP project ID
   # gkeLocation: us-central1     # GKE cluster location

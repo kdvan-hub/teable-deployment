@@ -1,0 +1,63 @@
+# Warm-capacity balloons (docs/sandbox-scheduling-v2.md, global.sandboxScheduling.headroom):
+# negative-priority pause pods hold sandbox-sized slots; a real sandbox preempts
+# one instantly while node provisioning happens in the background. Rendered only
+# when replicas>0; the PriorityClass is cluster-scoped, so restricted deploy
+# accounts (no cluster permissions) must keep replicas=0.
+{{- $gs := get (.Values.global | default dict) "sandboxScheduling" | default dict }}
+{{- $hr := $gs.headroom | default dict }}
+{{- $replicas := int ($hr.replicas | default 0) }}
+{{- if gt $replicas 0 }}
+{{- $name := printf "%s-sandbox-headroom" .Release.Name }}
+{{- $requests := $hr.requests | default dict }}
+{{- /* A balloon must hold exactly one sandbox slot: default to the scheduling
+       currency (global.sandboxScheduling.memoryRequest/cpuRequest) when set. */}}
+{{- $memory := $requests.memory | default ($gs.memoryRequest | default "700Mi") }}
+{{- $cpu := $requests.cpu | default ($gs.cpuRequest | default "50m") }}
+{{- $namespace := $hr.namespace | default ((.Values.sandboxNamespace).name | default "teable-sandbox") }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ $name }}
+value: {{ int ($hr.priorityClassValue | default -10) }}
+globalDefault: false
+preemptionPolicy: Never
+description: "Balloon pods holding warm sandbox capacity; preempted by any real workload."
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+    app: {{ $name }}
+spec:
+  replicas: {{ $replicas }}
+  selector:
+    matchLabels:
+      app: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+    spec:
+      priorityClassName: {{ $name }}
+      terminationGracePeriodSeconds: 0
+      {{- with $hr.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $hr.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: pause
+          image: {{ $hr.image | default "registry.k8s.io/pause:3.10" | quote }}
+          resources:
+            requests:
+              cpu: {{ $cpu | quote }}
+              memory: {{ $memory | quote }}
+            limits:
+              cpu: {{ $cpu | quote }}
+              memory: {{ $memory | quote }}
+{{- end }}

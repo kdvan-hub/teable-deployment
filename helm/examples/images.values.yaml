@@ -36,6 +36,10 @@ imagePreheater:
   images:
   - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2
   - ghcr.io/teableio/opensandbox-egress:v1.0.12
+global:
+  sandboxScheduling:
+    headroom:
+      image: registry.k8s.io/pause:3.10
 opensandbox-controller:
   controller:
     image:

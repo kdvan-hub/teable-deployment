@@ -201,3 +201,103 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "opensandbox-server.externalEntry" -}}
 {{- if eq ((((.Values.global).entry).mode) | toString) "external-nginx" -}}true{{- end -}}
 {{- end }}
+
+{{- /* ---- Sandbox scheduling v2 (docs/sandbox-scheduling-v2.md) ----
+       Switches live under global.sandboxScheduling so the umbrella chart and
+       this chart read one knob. Defaults preserve existing behavior except
+       packing (default on: only changes placement of NEW sandboxes). */}}
+
+{{- define "opensandbox-server.schedulingValues" -}}
+{{- $gs := dict -}}
+{{- with .Values.global }}{{- with .sandboxScheduling }}{{- $gs = . -}}{{- end }}{{- end -}}
+{{- toYaml $gs -}}
+{{- end }}
+
+{{- define "opensandbox-server.schedulingPackingEnabled" -}}
+{{- $gs := fromYaml (include "opensandbox-server.schedulingValues" .) -}}
+{{- $enabled := true -}}
+{{- with $gs.packing }}{{- if hasKey . "enabled" }}{{- $enabled = .enabled -}}{{- end }}{{- end -}}
+{{- if $enabled -}}true{{- end -}}
+{{- end }}
+
+{{- define "opensandbox-server.schedulingMemoryLimit" -}}
+{{- $gs := fromYaml (include "opensandbox-server.schedulingValues" .) -}}
+{{- $gs.memoryLimit | default "" -}}
+{{- end }}
+
+{{- /* True when a batchsandbox template must be mounted: either the operator
+       provided one, or scheduling switches synthesize one. config.toml already
+       points at the file path by default, so mounting it is always safe. */}}
+{{- define "opensandbox-server.hasBatchSandboxTemplate" -}}
+{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) -}}true{{- end -}}
+{{- end }}
+
+{{- /* Render the batchsandbox template with scheduling switches applied.
+       Merge direction: the operator template always wins on conflicts
+       (mergeOverwrite dst=overlay src=template). Round-trips through
+       fromYaml/toYaml, so comments in the source template are dropped. */}}
+{{- define "opensandbox-server.renderedBatchSandboxTemplate" -}}
+{{- $packing := include "opensandbox-server.schedulingPackingEnabled" . -}}
+{{- $memoryLimit := include "opensandbox-server.schedulingMemoryLimit" . -}}
+{{- if not (or $packing $memoryLimit) -}}
+{{- .Values.server.batchSandboxTemplate -}}
+{{- else -}}
+{{- $tpl := dict -}}
+{{- if .Values.server.batchSandboxTemplate -}}
+{{- $tpl = fromYaml .Values.server.batchSandboxTemplate -}}
+{{- if not (kindIs "map" $tpl) -}}
+{{- fail "server.batchSandboxTemplate is not valid YAML" -}}
+{{- end -}}
+{{- end -}}
+{{- $merged := $tpl -}}
+{{- if $packing -}}
+{{- /* Prefer co-locating sandboxes on the fullest node (bin packing) instead of
+       the scheduler default LeastAllocated spread. opensandbox.io/id is the
+       stable label every sandbox pod carries. */ -}}
+{{- $affinityOverlay := fromYaml `
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: opensandbox.io/id
+                      operator: Exists
+` -}}
+{{- $merged = mustMergeOverwrite $affinityOverlay $merged -}}
+{{- end -}}
+{{- if $memoryLimit -}}
+{{- $podSpec := dig "spec" "template" "spec" dict $merged -}}
+{{- $containers := $podSpec.containers | default list -}}
+{{- $touched := false -}}
+{{- range $c := $containers -}}
+{{- if eq (get $c "name") "sandbox" -}}
+{{- $resources := $c.resources | default dict -}}
+{{- $limits := $resources.limits | default dict -}}
+{{- if not (hasKey $limits "memory") -}}{{- $_ := set $limits "memory" $memoryLimit -}}{{- end -}}
+{{- $_ := set $resources "limits" $limits -}}
+{{- $_ := set $c "resources" $resources -}}
+{{- $touched = true -}}
+{{- end -}}
+{{- end -}}
+{{- if not $touched -}}
+{{- /* No sandbox container entry in the template yet: create one so the
+       default memory limit applies. The runtime merges its own fields in. */ -}}
+{{- $containers = append $containers (dict "name" "sandbox" "resources" (dict "limits" (dict "memory" $memoryLimit))) -}}
+{{- end -}}
+{{- $spec := $merged.spec | default dict -}}
+{{- $template := $spec.template | default dict -}}
+{{- $newPodSpec := $template.spec | default dict -}}
+{{- $_ := set $newPodSpec "containers" $containers -}}
+{{- $_ := set $template "spec" $newPodSpec -}}
+{{- $_ := set $spec "template" $template -}}
+{{- $_ := set $merged "spec" $spec -}}
+{{- end -}}
+{{- toYaml $merged -}}
+{{- end -}}
+{{- end }}

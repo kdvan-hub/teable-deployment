@@ -63,6 +63,25 @@ spec:
               value: {{ .Values.infraService.historySampleSeconds | default 5 | quote }}
             - name: HISTORY_WINDOW_SECONDS
               value: {{ .Values.infraService.historyWindowSeconds | default 600 | quote }}
+            {{- /* Feature switch only: rbac.clusterScope.create=false means the
+                   admin pre-provisions the ClusterRole, not that the feature is
+                   off (docs/sandbox-scheduling-v2.md §4). */}}
+            {{- $bp := (get $global "sandboxScheduling" | default dict).backpressure | default dict }}
+            {{- $bpEnabled := ne (toString ($bp.enabled | default true)) "false" }}
+            - name: SANDBOX_BACKPRESSURE_ENABLED
+              value: {{ ternary "true" "false" $bpEnabled | quote }}
+            {{- if $bpEnabled }}
+            - name: SANDBOX_BACKPRESSURE_NODE_SELECTOR
+              value: {{ $bp.nodeSelector | default "teable.io/node-pool=sandbox" | quote }}
+            - name: SANDBOX_BACKPRESSURE_HIGH_PERCENT
+              value: {{ $bp.highPercent | default 90 | quote }}
+            - name: SANDBOX_BACKPRESSURE_LOW_PERCENT
+              value: {{ $bp.lowPercent | default 80 | quote }}
+            - name: SANDBOX_BACKPRESSURE_INTERVAL_SECONDS
+              value: {{ $bp.intervalSeconds | default 30 | quote }}
+            - name: SANDBOX_BACKPRESSURE_TAINT_KEY
+              value: {{ $bp.taintKey | default "sandbox.teable.io/memory-pressure" | quote }}
+            {{- end }}
             - name: FILE_BROWSER_ENABLED
               value: {{ ternary "true" "false" .Values.infraService.fileBrowser.enabled | quote }}
             - name: FILE_BROWSER_ROOT

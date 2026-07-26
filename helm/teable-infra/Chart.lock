@@ -4,6 +4,6 @@ dependencies:
   version: 0.2.0
 - name: opensandbox-server
   repository: file://../opensandbox-server
-  version: 0.1.0
-digest: sha256:b88aa0bfffb5e30aa46163794cb74aa25157ee4b4a437c22867df19633b2a89f
-generated: "2026-05-15T14:39:18.571067+08:00"
+  version: 0.2.0
+digest: sha256:35d255a03f4f67f20acb2b5b7bf632e73443f6a9f20095e8869c8f4d3516d734
+generated: "2026-07-26T10:46:39.852833+08:00"
