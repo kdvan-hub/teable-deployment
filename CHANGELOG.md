@@ -11,6 +11,24 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## Unreleased
 
+- **Console: node names now display correctly on EKS/Karpenter clusters.** The
+  Sandboxes and Cluster pages rendered nodes as `- · 2.compute.internal` because
+  the node pool and display name were still derived from GKE conventions. The
+  node pool is now resolved from `teable.io/node-pool`, then
+  `karpenter.sh/nodepool`, then `eks.amazonaws.com/nodegroup` (the GKE label is
+  still recognized), and `ip-…compute.internal` hostnames keep their host
+  segment, e.g. `sandbox · ip-172-31-40-231`. No action needed.
+- **Console: the Git Repos page has been reworked.** It now opens with summary
+  cards (repo count, total size, repos pushed in the last 7 days, empty repos)
+  above a sortable, paginated repository table. Clicking a row slides out a
+  panel with the commit history, per-commit diffs and the file browser, and
+  every repo has a **Download zip** button that fetches the latest code archive
+  (HEAD) using your console session. Search, sort, page and the selected repo
+  persist in the URL. No action needed.
+- **Console: sandbox table sorting sticks, and Usage is split into CPU / Mem
+  columns.** Sorting on the Sandboxes page is now kept in the URL, so a refresh
+  (or a shared link) preserves it, and CPU and memory usage sort independently.
+  No action needed.
 - **Console: the Packages page has been removed.** The package-registry browser
   (internal registry / GCP Artifact Registry / local Docker images) saw no real
   usage and has been dropped, along with its `infraService.packages.*` Helm
