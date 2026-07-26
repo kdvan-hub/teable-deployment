@@ -216,7 +216,9 @@ runtimeNetworkPolicy:
   enabled: true
   sandbox:
     enabled: true
-    namespace: teable-sandbox
+    # Empty: follows sandboxNamespace.name. Set only to target a different
+    # namespace on purpose (an explicit value always wins).
+    namespace: ""
   appRuntime:
     enabled: true
     namespace: app-deploy

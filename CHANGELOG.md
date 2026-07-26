@@ -11,6 +11,12 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## Unreleased
 
+- **Helm: sandbox egress NetworkPolicy now follows `sandboxNamespace.name`.**
+  Previously `runtimeNetworkPolicy.sandbox` had an independent namespace default,
+  so renaming the sandbox namespace left the policy pointing at the old (deleted)
+  namespace and the upgrade failed. Explicit `runtimeNetworkPolicy.sandbox.namespace`
+  values still win. No action needed.
+
 - **Helm: sandbox bin-packing scheduling (`global.sandboxScheduling.packing`).**
   New sandboxes now prefer the fullest node instead of spreading across nodes,
   so clusters run fewer, fuller nodes. Placement-only change for newly created

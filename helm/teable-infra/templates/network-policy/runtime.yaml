@@ -6,7 +6,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: teable-sandbox-allow-all-egress
-  namespace: {{ $sandbox.namespace | default "teable-sandbox" | quote }}
+  {{- /* Follow the dataplane namespace knob: an independent default here drifts
+         from sandboxNamespace.name on rename (2026-07-26 EKS incident: policy
+         kept applying into the pruned teable-sandbox namespace). */}}
+  namespace: {{ $sandbox.namespace | default ((.Values.sandboxNamespace).name | default "teable-sandbox") | quote }}
   labels:
     app.kubernetes.io/name: teable-sandbox-egress
     app.kubernetes.io/instance: {{ .Release.Name }}
