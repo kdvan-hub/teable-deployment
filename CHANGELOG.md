@@ -9,6 +9,29 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-07-26T01-04-56Z.2377
+
+#### Feature Updates
+
+- Added admin-configurable AI concurrency limits for each space, with a default of five concurrent tasks. Additional AI requests are queued and processed fairly across field generation, automations, and other AI workflows.
+- Admins with the required permissions can now initiate a password reset for a specific user. Reset links are single-use, expire at the stated time, and are emailed automatically when SMTP is configured. This action is unavailable when password login is disabled.
+- Column reordering in grid views now updates immediately without reloading records. Failed saves safely restore the previous order and display an error.
+
+#### Bug Fixes & Improvements
+
+- Fixed lookup values remaining empty or stale after linked source data changed, including filtered records and conditional lookups. Related values now recalculate and synchronize more reliably, with improved performance for large updates.
+- Fixed Claw bot chats becoming stuck or losing replies after the bot was removed from the conversation’s Base. Existing chats are moved to another accessible Base where possible, and completed replies are delivered more reliably.
+- Improved AI task scheduling, cancellation, recovery, and progress accuracy, including when Bases are deleted or generation tasks stall.
+- Improved navigation from Spaces with faster Base entry and continuous loading feedback for pinned Bases, tables, views, dashboards, workflows, and apps. Repeated clicks no longer restart navigation, entry can be canceled, and native new-tab actions remain supported.
+- Fixed expired SSO callbacks showing a raw error after browser navigation. Users are now redirected to the app when already signed in or to the login page when authentication is required.
+- Improved view switching so rows, sorting, filters, grouping, controls, and permissions from the previous view no longer appear briefly. Recently used views also restore their initial layout more smoothly while fresh data loads.
+- Improved credit billing performance and resilience under high-volume activity. Fixed incorrect overlimit blocks after refunds or delayed charges, and improved charge and refund attribution across billing periods and add-on validity windows.
+- Fixed BYODB table switching failures caused by schema handling, reducing unclear errors when changing tables.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-07-26T01-04-56Z.2377)
+
 ## v2026.7.13 - 2026-07-23
 
 ### Teable release.2026-07-23T12-32-52Z.2361
