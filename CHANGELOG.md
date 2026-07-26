@@ -9,6 +9,14 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Console: the Packages page has been removed.** The package-registry browser
+  (internal registry / GCP Artifact Registry / local Docker images) saw no real
+  usage and has been dropped, along with its `infraService.packages.*` Helm
+  values and `PACKAGE_*` environment variables. Any leftover `packages:` block
+  in your values file is now ignored and can be deleted. No action needed.
+
 ## v2026.7.16 - 2026-07-26
 
 - **Helm: ingresses accept additional hostnames (`ingress.additionalHosts`).**

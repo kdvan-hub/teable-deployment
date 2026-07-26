@@ -625,26 +625,6 @@ infraService:
   #   region: cn-hangzhou
   # Optional backup provider identifier, exposed to the service as BACKUP_PROVIDER.
   # backupProvider: ""
-  # Package registry browsing (optional). All keys are read by templates/infra-service/workload.yaml.
-  # packages:
-  #   internalRegistry:
-  #     enabled: false
-  #     url: ""                      # registry API URL
-  #     displayHost: ""              # host shown in image references
-  #     repoLimit: 100               # max repositories listed
-  #     tagLimit: 50                 # max tags listed per repository
-  #     bearerTokenSecretName: ""    # Secret with a bearer token
-  #     bearerTokenSecretKey: token
-  #     basicAuthSecretName: ""      # Secret with username/password keys
-  #     usernameKey: username
-  #     passwordKey: password
-  #     dockerConfigSecretName: ""   # Secret with a .dockerconfigjson key
-  #     dockerConfigSecretKey: .dockerconfigjson
-  #   artifactRegistry:              # GCP Artifact Registry (GKE-specific)
-  #     enabled: false
-  #     location: ""                 # e.g. us-central1
-  #     repositories: []             # repository names to browse
-  #     pageSize: 100
   resources:
     requests:
       cpu: 50m
