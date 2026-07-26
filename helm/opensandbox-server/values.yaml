@@ -88,6 +88,10 @@ server:
     className: ""
     annotations: {}
     host: ""
+    # Extra hostnames served with the same path and TLS secret (issue a
+    # multi-SAN certificate covering all names). Used for cluster-scoped
+    # domains during migrations.
+    additionalHosts: []
     path: "/"
     pathType: "Prefix"
     tls:

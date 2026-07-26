@@ -7,6 +7,9 @@
 {{- $monitorServiceName := printf "%s-infra-service" .Release.Name }}
 {{- $host := .Values.infraService.ingress.host | default (include "teable-infra.infraHost" .) }}
 {{- $tlsSecretName := .Values.infraService.ingress.tls.secretName | default (printf "%s-tls" $host) }}
+{{- /* additionalHosts (W2 I1): extra hostnames served with the same paths and the
+       same TLS secret (issue a multi-SAN certificate covering all names). */}}
+{{- $allHosts := concat (list $host) (.Values.infraService.ingress.additionalHosts | default list) }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -26,14 +29,18 @@ spec:
   {{- if .Values.infraService.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ $host | quote }}
+        {{- range $allHosts }}
+        - {{ . | quote }}
+        {{- end }}
       secretName: {{ $tlsSecretName | quote }}
   {{- end }}
   rules:
-    - host: {{ $host | quote }}
+    {{- $paths := (.Values.infraService.ingress.paths | default (list "/")) }}
+    {{- range $h := $allHosts }}
+    - host: {{ $h | quote }}
       http:
         paths:
-          {{- range (.Values.infraService.ingress.paths | default (list "/")) }}
+          {{- range $paths }}
           - path: {{ . | quote }}
             pathType: Prefix
             backend:
@@ -42,4 +49,5 @@ spec:
                 port:
                   name: http
           {{- end }}
+    {{- end }}
 {{- end }}

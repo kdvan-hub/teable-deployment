@@ -22,20 +22,25 @@ spec:
   ingressClassName: {{ .Values.server.gateway.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ $host | quote }}
+    {{- range $h := concat (list $host) (.Values.server.gateway.ingress.additionalHosts | default list) }}
+    - host: {{ $h | quote }}
       http:
         paths:
-          - path: {{ .Values.server.gateway.ingress.path | default "/" | quote }}
-            pathType: {{ .Values.server.gateway.ingress.pathType | default "Prefix" }}
+          - path: {{ $.Values.server.gateway.ingress.path | default "/" | quote }}
+            pathType: {{ $.Values.server.gateway.ingress.pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ include "opensandbox-server.ingressGatewayFullname" . }}
+                name: {{ include "opensandbox-server.ingressGatewayFullname" $ }}
                 port:
                   number: 80
+    {{- end }}
   {{- if .Values.server.gateway.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ $host | quote }}
+        {{- range .Values.server.gateway.ingress.additionalHosts | default list }}
+        - {{ . | quote }}
+        {{- end }}
       secretName: {{ include "opensandbox-server.gatewayIngressTlsSecret" . }}
   {{- end }}
 {{- end }}

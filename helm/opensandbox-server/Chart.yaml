@@ -16,7 +16,7 @@ apiVersion: v2
 name: opensandbox-server
 description: OpenSandbox Lifecycle API server for sandbox creation and management
 type: application
-version: 0.2.0
+version: 0.3.0
 appVersion: "0.1.0"
 
 keywords:

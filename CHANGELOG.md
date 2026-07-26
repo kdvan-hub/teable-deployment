@@ -9,6 +9,15 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Helm: ingresses accept additional hostnames (`ingress.additionalHosts`).**
+  infra-service, git-registry, the sandbox lifecycle API (`/v1`) and the sandbox
+  preview gateway can now serve extra hostnames alongside the primary one, using
+  the same TLS secret (issue a multi-SAN certificate listing every name in
+  `certificate.dnsNames`). Useful for serving a permanent cluster-scoped domain
+  next to the public domain during migrations. Empty by default. No action needed.
+
 ## v2026.7.15 - 2026-07-26
 
 - **Helm: sandbox egress NetworkPolicy now follows `sandboxNamespace.name`.**

@@ -32,10 +32,14 @@ spec:
   tls:
     - hosts:
         - {{ required "gitRegistry.ingress.host (or global.baseDomain) is required" $host | quote }}
+        {{- range $gitRegistry.ingress.additionalHosts | default list }}
+        - {{ . | quote }}
+        {{- end }}
       secretName: {{ required "gitRegistry.ingress.tls.secretName (or global.baseDomain) is required" $tlsSecretName | quote }}
   {{- end }}
   rules:
-    - host: {{ required "gitRegistry.ingress.host (or global.baseDomain) is required" $host | quote }}
+    {{- range $h := concat (list $host) ($gitRegistry.ingress.additionalHosts | default list) }}
+    - host: {{ required "gitRegistry.ingress.host (or global.baseDomain) is required" $h | quote }}
       http:
         paths:
           {{- if $gitRegistry.basePath }}
@@ -63,6 +67,7 @@ spec:
                 port:
                   name: http
           {{- end }}
+    {{- end }}
 {{- end }}
 ---
 {{- if $gitRegistry.ingress.certificate.enabled }}
@@ -83,5 +88,8 @@ spec:
     kind: {{ $gitRegistry.ingress.certificate.issuerKind | default "ClusterIssuer" | quote }}
   dnsNames:
     - {{ required "gitRegistry.ingress.host (or global.baseDomain) is required" $host | quote }}
+    {{- range $gitRegistry.ingress.additionalHosts | default list }}
+    - {{ . | quote }}
+    {{- end }}
 {{- end }}
 {{- end }}
