@@ -11,6 +11,12 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## Unreleased
 
+- **Console: one unhealthy node no longer stalls the Sandboxes/Cluster pages.**
+  Cluster status collected per-node PVC usage through the kubelet
+  `stats/summary` proxy with no dedicated timeout; when a node's kubelet
+  stopped serving (e.g. under memory pressure) every page load waited ~11s for
+  the apiserver-side TLS handshake to fail. That call now times out after 3s
+  and degrades to "no PVC usage data" for the affected node. No action needed.
 - **Console: node names now display correctly on EKS/Karpenter clusters.** The
   Sandboxes and Cluster pages rendered nodes as `- · 2.compute.internal` because
   the node pool and display name were still derived from GKE conventions. The
