@@ -9,6 +9,23 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-07-27T06-04-51Z.2385
+
+#### Feature Updates
+- Added an organization setting that lets admins enable department keyword search across the entire organization while keeping department tree browsing limited to related departments. The option is off by default and treats wildcard characters literally.
+- Renamed the chat entry to “Chat in IM” and updated related terminology to use “IM bot.”
+
+#### Bug Fixes & Improvements
+- Cleaned up read-only template previews by removing irrelevant computing status and preventing unnecessary activity checks that could cause 403 errors.
+- Restored reliable sorting, filtering, and search for records with missing created or modified metadata.
+- Limited field change warnings for button fields to updates that may affect calculations or rewrite data, avoiding warnings for display-only changes such as button text.
+- Fixed grouped table views with footer aggregations failing to load for permission-restricted users when the grouping field was hidden.
+- Improved sandbox generation reliability by preventing abandoned runs and secondary notification failures from causing repeated retries, cross-run interference, or loss of final results.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-07-27T06-04-51Z.2385)
+
 ## v2026.7.17 - 2026-07-27
 
 - **Private CA trust for published apps.** New `infraService.privateCa` values
