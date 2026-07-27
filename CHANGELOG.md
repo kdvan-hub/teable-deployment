@@ -9,6 +9,27 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-07-27T10-51-13Z.2393
+
+#### Feature Updates
+
+- Reorganized navigation on the system administration page into clearer groups.
+- Expanded audit logs: delete operations now include specific record IDs, each log includes the API endpoint that generated it, and space and base creation, deletion, and modification are also recorded.
+- Unified collaborator invitation notifications across email and in-product channels, with toast notifications for unread invitations.
+- Strengthened sandbox permission controls. Agents can still install user-space dependencies, while required system packages must be preinstalled.
+
+#### Bug Fixes & Improvements
+
+- Improved enterprise SSO reliability for generated applications. Authorization failures now display clear errors instead of loading indefinitely.
+- Improved automation reliability for external databases.
+- Improved audit log reliability without interrupting completed user requests.
+- Updated the favicon in light mode to improve its visibility and recognizability in browser tabs.
+- Improved AI proxy error responses when a base is missing or a token is invalid.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-07-27T10-51-13Z.2393)
+
 ## v2026.7.18 - 2026-07-27
 
 - **Sandbox egress fence: allow-list private platform endpoints.**
