@@ -9,6 +9,14 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **A failed app update no longer takes down the running version, and sleeping
+  apps are no longer removed.** App Runtime keeps the previous version serving
+  while a new version fails to become ready, and apps scaled to zero are never
+  treated as unhealthy leftovers. Re-publish a failed update to retry; no other
+  action needed.
+
 ## v2026.7.19 - 2026-07-27
 
 ### Teable release.2026-07-27T10-51-13Z.2393
