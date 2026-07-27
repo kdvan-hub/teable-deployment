@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.7.17 - 2026-07-27
 
 - **Console: the Git Repos page no longer blocks on repository-size scans.**
   The repo listing recomputes per-repo sizes with a full directory scan that can
