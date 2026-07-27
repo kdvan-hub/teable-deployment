@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.7.19** (2026-07-27T11:52:59Z) -- do not edit
+> Generated for platform release **v2026.7.20** (2026-07-27T14:23:11Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -15,7 +15,7 @@ across releases. What changed between releases: [`CHANGELOG.md`](CHANGELOG.md).
 | `teable` | `ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393` | amd64, arm64 | Stable channel (:latest) resolved to its release tag at generation time |
 | `teable-sandbox-agent` | `ghcr.io/teableio/teable-sandbox-agent` | - | Prefix only, no tag: at runtime the app pulls `<prefix>:<its own release tag>`, so sandbox hosts need registry access |
 | `teable-app-runtime` | `ghcr.io/teableio/teable-app-runtime:20260717T042653Z` | amd64, arm64 |  |
-| `teable-infra-service` | `ghcr.io/teableio/teable-infra-service:20260727T061842Z` | amd64, arm64 |  |
+| `teable-infra-service` | `ghcr.io/teableio/teable-infra-service:20260727T140626Z` | amd64, arm64 |  |
 | `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix6` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5) and docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6) |
 | `opensandbox-ingress` | `ghcr.io/teableio/opensandbox-ingress:v1.0.7` | amd64, arm64 |  |
 | `opensandbox-controller` | `ghcr.io/teableio/opensandbox-controller:v0.2.0` | amd64, arm64 |  |
