@@ -74,11 +74,26 @@ server:
   sandboxNetworkPolicy:
     enabled: false
     name: sandbox-egress-public-only
+    # IPv4 and IPv6 entries are both accepted here; each is routed into the
+    # blocked-range list of its own address family.
     serviceCidrs: []
     additionalBlockedCidrs: []
     dnsNamespace: kube-system
     dnsPorts:
       - 53
+    # Allow-listed exceptions inside the blocked private ranges. Required when
+    # platform endpoints the sandbox must call back (Teable / infra domains)
+    # resolve to private IPs, e.g. an internal ingress LB VIP. Note this is an
+    # L3/L4 allow: every virtual host behind the allowed address becomes
+    # reachable (no hostname/SNI scoping) — prefer a platform-dedicated VIP, or
+    # use the egress sidecar for domain-level control. Entries are
+    # either a bare CIDR string, or a map with optional port scoping:
+    #   - "10.0.12.34/32"
+    #   - cidr: "10.0.12.34/32"
+    #     ports:
+    #       - protocol: TCP   # defaults to TCP when omitted
+    #         port: 443
+    additionalAllowedCidrs: []
 
   # Lifecycle API ingress. Exposes opensandbox-server to the Control Service
   # (the opensandbox-server control-plane API) when the Control Service runs

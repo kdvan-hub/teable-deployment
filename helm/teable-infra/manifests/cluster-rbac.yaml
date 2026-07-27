@@ -154,7 +154,7 @@ kind: ClusterRole
 metadata:
   name: opensandbox-server-role
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -391,7 +391,7 @@ kind: ClusterRoleBinding
 metadata:
   name: opensandbox-server-rolebinding
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0

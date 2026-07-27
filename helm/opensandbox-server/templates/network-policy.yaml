@@ -26,6 +26,10 @@ spec:
         - protocol: TCP
           port: {{ . }}
         {{- end }}
+    {{- /* Dynamic blocked CIDRs are routed into the ipBlock of their address
+           family: a NetworkPolicy `except` entry must be a subnet of its parent
+           `cidr`, so an IPv6 service CIDR under 0.0.0.0/0 (or vice versa) would
+           be rejected by the API server. */}}
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -36,10 +40,14 @@ spec:
               - 100.64.0.0/10
               - 169.254.0.0/16
               {{- range $policy.serviceCidrs }}
+              {{- if not (contains ":" .) }}
               - {{ . | quote }}
               {{- end }}
+              {{- end }}
               {{- range $policy.additionalBlockedCidrs }}
+              {{- if not (contains ":" .) }}
               - {{ . | quote }}
+              {{- end }}
               {{- end }}
     - to:
         - ipBlock:
@@ -47,4 +55,38 @@ spec:
             except:
               - fc00::/7
               - fe80::/10
+              {{- range $policy.serviceCidrs }}
+              {{- if contains ":" . }}
+              - {{ . | quote }}
+              {{- end }}
+              {{- end }}
+              {{- range $policy.additionalBlockedCidrs }}
+              {{- if contains ":" . }}
+              - {{ . | quote }}
+              {{- end }}
+              {{- end }}
+    {{- /* Extra allow rules take precedence over the private-range excepts above
+           (NetworkPolicy rules are OR-ed), so platform endpoints that resolve to
+           private IPs — e.g. an internal ingress VIP for the Teable/infra
+           domains — stay reachable while the rest of the private space is not. */}}
+    {{- range $policy.additionalAllowedCidrs }}
+    {{- if kindIs "string" . }}
+    - to:
+        - ipBlock:
+            cidr: {{ . | quote }}
+    {{- else if kindIs "map" . }}
+    - to:
+        - ipBlock:
+            cidr: {{ required "server.sandboxNetworkPolicy.additionalAllowedCidrs: map entries require a non-empty `cidr`" .cidr | quote }}
+      {{- with .ports }}
+      ports:
+        {{- range . }}
+        - protocol: {{ .protocol | default "TCP" }}
+          port: {{ required "server.sandboxNetworkPolicy.additionalAllowedCidrs: `ports` entries require `port`" .port }}
+        {{- end }}
+      {{- end }}
+    {{- else }}
+    {{- fail "server.sandboxNetworkPolicy.additionalAllowedCidrs: entries must be a CIDR string or a {cidr, ports} map" }}
+    {{- end }}
+    {{- end }}
 {{- end }}

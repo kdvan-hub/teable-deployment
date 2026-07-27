@@ -1,7 +1,23 @@
 {{- $policy := .Values.runtimeNetworkPolicy | default dict }}
 {{- if $policy.enabled }}
 {{- $sandbox := $policy.sandbox | default dict }}
-{{- if ($sandbox.enabled | default true) }}
+{{- /* Mutually exclusive with the opensandbox-server sandbox-egress-public-only
+       policy: NetworkPolicy allow rules are OR-ed across policies, so keeping
+       this allow-all alongside the restricted fence would void the fence. The
+       exclusion only applies when both policies target the same namespace —
+       allow rules never combine across namespaces, so an allow-all deliberately
+       serving a different namespace must keep rendering. Rendering is skipped
+       here, but `kubectl apply` never prunes — on an existing cluster the stale
+       allow-all must be deleted once by hand. */}}
+{{- $serverValues := index .Values "opensandbox-server" | default dict }}
+{{- $restrictedEgress := dig "server" "sandboxNetworkPolicy" "enabled" false $serverValues }}
+{{- $fenceNamespace := dig "server" "gateway" "dataplaneNamespace" "teable-sandbox" $serverValues }}
+{{- $allowAllNamespace := $sandbox.namespace | default ((.Values.sandboxNamespace).name | default "teable-sandbox") }}
+{{- $fenceSupersedes := and $restrictedEgress (eq $fenceNamespace $allowAllNamespace) }}
+{{- /* `default` swallows an explicit boolean false (Sprig treats false as empty),
+       so gate on key presence to honor `enabled: false`. */}}
+{{- $sandboxEnabled := ternary $sandbox.enabled true (hasKey $sandbox "enabled") }}
+{{- if and $sandboxEnabled (not $fenceSupersedes) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -27,7 +43,8 @@ spec:
 ---
 {{- end }}
 {{- $appRuntime := $policy.appRuntime | default dict }}
-{{- if ($appRuntime.enabled | default true) }}
+{{- $appRuntimeEnabled := ternary $appRuntime.enabled true (hasKey $appRuntime "enabled") }}
+{{- if $appRuntimeEnabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

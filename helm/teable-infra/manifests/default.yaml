@@ -137,7 +137,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -232,7 +232,7 @@ metadata:
   name: opensandbox-server-config
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -566,7 +566,7 @@ kind: ClusterRole
 metadata:
   name: opensandbox-server-role
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -803,7 +803,7 @@ kind: ClusterRoleBinding
 metadata:
   name: opensandbox-server-rolebinding
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -1232,7 +1232,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -1254,7 +1254,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -1586,7 +1586,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -1648,7 +1648,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -2447,7 +2447,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway
@@ -2481,7 +2481,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -2670,7 +2670,7 @@ metadata:
   name: opensandbox-server
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-server
     app.kubernetes.io/instance: teable
     app.kubernetes.io/version: 0.1.0
@@ -2691,7 +2691,7 @@ metadata:
   name: opensandbox-ingress-gateway
   namespace: opensandbox-system
   labels:
-    helm.sh/chart: opensandbox-server-0.3.0
+    helm.sh/chart: opensandbox-server-0.4.0
     app.kubernetes.io/name: opensandbox-ingress-gateway
     app.kubernetes.io/instance: teable
     app.kubernetes.io/component: ingress-gateway

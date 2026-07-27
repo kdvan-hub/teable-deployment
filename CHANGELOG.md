@@ -11,6 +11,17 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## v2026.7.18 - 2026-07-27
 
+- **Sandbox egress fence: allow-list private platform endpoints.**
+  `opensandbox-server.server.sandboxNetworkPolicy.additionalAllowedCidrs`
+  (`server.…` standalone) keeps private platform VIPs reachable while private
+  ranges stay blocked. No action needed unless you enable the fence.
+- **Enabling the sandbox egress fence removes the built-in allow-all policy.**
+  On existing clusters also delete it once: `kubectl -n <sandbox namespace>
+  delete networkpolicy teable-sandbox-allow-all-egress` (apply does not prune).
+- **`runtimeNetworkPolicy.*.enabled: false` now actually disables the policy.**
+  An explicit `false` used to be treated as unset, so the allow-all kept
+  rendering. No action needed.
+
 ### Teable release.2026-07-27T06-04-51Z.2385
 
 #### Feature Updates
