@@ -11,6 +11,15 @@
 {{- end }}
 {{- /* s3 is the full-stack default (bundled MinIO); internal profiles set gcs/oss explicitly, so they are unaffected by the fallback. */}}
 {{- $artifactProvider := .Values.infraService.appRuntime.artifactStoreProvider | default "s3" }}
+{{- /* Private CA trust: mounts the CA bundle into the infra-service pod (outbound
+       HTTPS such as the app public-endpoint probe) and forwards the ConfigMap name
+       so App Runtime pods get the same mount. The mount path and the root-ca.crt
+       key are a shared convention with helm/private-ca.md. */}}
+{{- $privateCa := .Values.infraService.privateCa | default dict }}
+{{- $privateCaConfigMap := "" }}
+{{- if $privateCa.enabled }}
+{{- $privateCaConfigMap = required "infraService.privateCa.configMapName is required when infraService.privateCa.enabled=true" $privateCa.configMapName }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -275,6 +284,13 @@ spec:
               value: {{ .Values.infraService.appRuntime.appDir | quote }}
             - name: APP_RUNTIME_ALLOWED_IMAGE_PREFIXES
               value: {{ join "," .Values.infraService.appRuntime.allowedImagePrefixes | quote }}
+            {{- if $privateCa.enabled }}
+            {{- /* The same ConfigMap name must exist in the App Runtime namespace. */}}
+            - name: APP_RUNTIME_CA_CONFIGMAP
+              value: {{ $privateCaConfigMap | quote }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/ssl/private-ca/root-ca.crt
+            {{- end }}
             {{- if .Values.gitRegistry.enabled }}
             - name: GIT_REGISTRY_ENABLED
               value: "true"
@@ -367,12 +383,23 @@ spec:
               mountPath: {{ .Values.infraService.fileBrowser.mountPath | quote }}
               readOnly: {{ .Values.infraService.fileBrowser.readOnly }}
             {{- end }}
+            {{- if $privateCa.enabled }}
+            - name: private-ca
+              mountPath: /etc/ssl/private-ca/root-ca.crt
+              subPath: root-ca.crt
+              readOnly: true
+            {{- end }}
       volumes:
         {{- if .Values.infraService.fileBrowser.enabled }}
         - name: juicefs
           persistentVolumeClaim:
             claimName: {{ .Values.infraService.fileBrowser.pvcName | quote }}
             readOnly: {{ .Values.infraService.fileBrowser.readOnly }}
+        {{- end }}
+        {{- if $privateCa.enabled }}
+        - name: private-ca
+          configMap:
+            name: {{ $privateCaConfigMap | quote }}
         {{- end }}
 ---
 apiVersion: v1

@@ -1,4 +1,4 @@
-# Private CA / self-signed certificates and sandboxes
+# Private CA / self-signed certificates
 
 Sandboxes call back into the Teable app and the Infra entry over HTTPS: AI
 sessions talk to the app API, builds push to the git registry, artifacts
@@ -15,8 +15,11 @@ Typical symptoms: the stack is healthy and the UI works, but AI sessions fail
 right after starting, or app builds fail on `git push`.
 
 Publicly trusted certificates (the default `letsencrypt-dns` issuer) never
-need any of this. On a private PKI, pick one of the two options below. Both
-work by overriding the sandbox pod template
+need any of this. On a private PKI, pick one of the two sandbox options
+below -- and if you publish apps, additionally enable the App Runtime block
+described in
+[Published apps (App Runtime) and the Infra Service](#published-apps-app-runtime-and-the-infra-service).
+Both sandbox options work by overriding the sandbox pod template
 (`opensandbox-server.server.batchSandboxTemplate`) in your values file --
 copy the default block from `helm/teable-infra/values.yaml` and add the
 marked lines.
@@ -113,6 +116,56 @@ This disables certificate verification for **all** Node TLS inside the
 sandbox, agent included, and it is Node-only (Python and curl need their own
 switches). Acceptable for a short trial on an isolated network; do not run
 production this way -- prefer Option A.
+
+## Published apps (App Runtime) and the Infra Service
+
+Published apps run outside sandboxes, so the sandbox options above do not
+cover them. An App Runtime pod downloads its build artifact from the Infra
+entry over HTTPS on every start, and app code may call the Teable API at
+runtime; the Infra Service also probes each app's public URL after a deploy.
+On a private PKI all three fail: apps CrashLoop on the artifact download, and
+deployments can stick at `PublicEndpointNotReady` even though the pod is
+healthy.
+
+1. Create a ConfigMap holding your CA bundle under the `root-ca.crt` key, in
+   **both** the Infra Service namespace (`infraService.namespaceOverride`,
+   default `opensandbox-system`) and the App Runtime namespace
+   (`infraService.appRuntime.namespace`, default `app-deploy`):
+
+   ```bash
+   kubectl -n opensandbox-system create configmap teable-root-ca \
+     --from-file=root-ca.crt=./ca-bundle.crt
+   kubectl -n app-deploy create configmap teable-root-ca \
+     --from-file=root-ca.crt=./ca-bundle.crt
+   ```
+
+2. Enable the values block:
+
+   ```yaml
+   infraService:
+     privateCa:
+       enabled: true
+       configMapName: teable-root-ca
+   ```
+
+3. `helm upgrade`. The infra-service restarts with the bundle trusted for all
+   of its outbound HTTPS. Already-published apps keep their old pod template:
+   **republish each running app** (or trigger a redeploy) to pick up the
+   mount -- new publishes get it automatically.
+
+Make the file a **full bundle** (public roots with your corporate root
+appended), not the single root certificate: Node's `NODE_EXTRA_CA_CERTS`
+extends the default store, but the `CURL_CA_BUNDLE` used for the artifact
+download replaces it, so app code fetching public URLs with curl would
+otherwise lose the public roots. The same bundle file also works as the
+content of the Option A sandbox ConfigMap.
+
+When rotating the CA, updating the ConfigMap is not enough: the certificate
+is mounted via `subPath`, which never picks up ConfigMap changes. Restart the
+infra-service pod and republish (or redeploy) running apps after the update.
+
+The Docker backend of the app-deployment plane has no CA injection yet; on a
+private PKI use the Kubernetes backend for published apps.
 
 ## The Docker path
 

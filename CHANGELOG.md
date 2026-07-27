@@ -11,6 +11,9 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## v2026.7.17 - 2026-07-27
 
+- **Private CA trust for published apps.** New `infraService.privateCa` values
+  mount your corporate CA bundle into the Infra Service and published apps.
+  Private-PKI installs: follow `helm/private-ca.md`, then republish apps.
 - **Console: the Git Repos page no longer blocks on repository-size scans.**
   The repo listing recomputes per-repo sizes with a full directory scan that can
   take tens of seconds on networked storage; once its 5-minute cache expired the

@@ -423,6 +423,17 @@ infraService:
   namespaces:
     - opensandbox-system
     - opensandbox
+  # Corporate/private CA trust for the app-deployment plane. When enabled, the
+  # CA bundle from the named ConfigMap (key: root-ca.crt) is mounted into the
+  # infra-service pod and into every published App Runtime pod, with
+  # NODE_EXTRA_CA_CERTS / CURL_CA_BUNDLE pointing at it. The ConfigMap must
+  # exist in both the infra-service namespace and the App Runtime namespace
+  # (appRuntime.namespace, default app-deploy). Use a full bundle (public roots
+  # plus your corporate root) -- curl replaces its trust store instead of
+  # extending it. Setup guide: helm/private-ca.md.
+  privateCa:
+    enabled: false
+    configMapName: ""
   fileBrowser:
     enabled: true
     # Environment-specific defaults: the JuiceFS PVC/PV names below come from a reference
