@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Reserve kubelet memory on dedicated sandbox nodes — action needed.**
+  Bin-packing (`sandboxScheduling.packing`, default since v2026.7.15) fills
+  sandbox nodes to their allocatable limit, so a node left on its provisioner's
+  default reservation can lose its kubelet under load and drop every sandbox on
+  it. Set `system-reserved`/`kube-reserved`/`eviction-hard` in your node
+  provisioner, then replace existing sandbox nodes — the reservation applies at
+  node bootstrap only.
+
 ## v2026.7.23 - 2026-07-28
 
 - **Sandboxes can run unprivileged.** `global.sandboxSecurity.nonRoot.enabled=true`
@@ -18,13 +28,6 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 - **Sandbox engine `v0.2.0-fix7`, execd `v1.0.19-fix3`** (required by the
   switch above). Helm installs get them from `versions.yaml`; Docker installs
   on the next `apply.sh`.
-- **Reserve kubelet memory on dedicated sandbox nodes — action needed.**
-  Bin-packing (`sandboxScheduling.packing`, default since v2026.7.15) fills
-  sandbox nodes to their allocatable limit, so a node left on its provisioner's
-  default reservation can lose its kubelet under load and drop every sandbox on
-  it. Set `system-reserved`/`kube-reserved`/`eviction-hard` in your node
-  provisioner, then replace existing sandbox nodes — the reservation applies at
-  node bootstrap only.
 
 ## v2026.7.22 - 2026-07-28
 
