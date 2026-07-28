@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.7.24 - 2026-07-28
 
 - **Reserve kubelet memory on dedicated sandbox nodes — action needed.**
   Bin-packing (`sandboxScheduling.packing`, default since v2026.7.15) fills

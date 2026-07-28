@@ -5,8 +5,8 @@
 # China deployments: every ghcr.io/teableio/ image is mirrored with identical
 # tags at registry.cn-shenzhen.aliyuncs.com/teable/ (digests differ per registry; the
 # digests below are for the canonical registry shown in each reference).
-platformRelease: v2026.7.23
-releasedAt: '2026-07-28T14:16:11Z'
+platformRelease: v2026.7.24
+releasedAt: '2026-07-28T15:26:52Z'
 components:
   teable:
     image: ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393
@@ -117,3 +117,4 @@ verified:
   docker: '2026-07-15'
   kubernetes: '2026-07-15'
   backupRestore: '2026-07-14'
+  sandboxChain: '2026-07-28'
