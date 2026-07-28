@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## v2026.7.21 - 2026-07-28
+## Unreleased
 
 - **New guide for sizing sandbox capacity.** `global.sandboxScheduling.memoryRequest`
   is what decides how many sandboxes fit on a node, and both a too-low and a
@@ -17,6 +17,8 @@ release's `versions.yaml`. Hot-swappable; no action needed.
   AI-session and app-build workload, then re-derive it from your own usage --
   see `helm/sandbox-capacity.md`. No action needed if your current density
   already works.
+
+## v2026.7.21 - 2026-07-28
 
 - **Private CA trust for sandboxes is now a values switch.** Set
   `global.sandboxPrivateCa.enabled=true` and point `configMapName` at a
