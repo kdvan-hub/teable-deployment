@@ -165,6 +165,20 @@ global:
   # opensandbox-server sub-chart (pod template merge, request envs). Defaults
   # preserve existing behavior except packing, which only changes where NEW
   # sandboxes land (rollback: packing.enabled=false).
+  #
+  # PREREQUISITE, set on the NODES and not here: bin-packing deliberately fills a
+  # sandbox node to its allocatable limit, so the kubelet must own memory that
+  # pods can never take. A node left on its provisioner's default reservation can
+  # be starved by a burst of sandbox activity — the kubelet stops answering, the
+  # node goes NotReady, and every sandbox on it is lost while the machine still
+  # looks healthy to the cloud provider. Helm cannot set this; configure it in the
+  # provisioner (kubelet --system-reserved / --kube-reserved / --eviction-hard, or
+  # the equivalent field: Karpenter EC2NodeClass `spec.kubelet`, GKE system-config,
+  # kubeadm KubeletConfiguration). Size the reservation from the node's capacity
+  # and keep an eviction margin above it, so a node under pressure sheds one
+  # sandbox instead of losing its kubelet. The reservation is applied at node
+  # bootstrap: existing nodes must be replaced to pick it up, and rebooting a
+  # wedged node brings the old value back with it.
   sandboxScheduling:
     # Bin-packing: prefer the fullest node instead of the scheduler's default
     # spread. Merged into batchSandboxTemplate at render time; an operator
@@ -175,6 +189,17 @@ global:
     # opensandbox-server (explicit server.env entries still win). Empty = keep
     # current behavior. Keep cpuRequest small (<=50m) so memory stays the
     # binding constraint on small nodes.
+    #
+    # memoryRequest is the only thing deciding how many sandboxes land on a node
+    # once packing is on, so it has to match reality: set it to the MEAN memory a
+    # sandbox actually uses in your workload, not to a floor or a hoped-for value.
+    # Set it too low and the scheduler keeps admitting sandboxes long after the
+    # node is physically full — the taint from `backpressure` below only stops new
+    # arrivals, it cannot shrink the ones already running. Sanity-check the result
+    # against the node: (allocatable - DaemonSet requests) / memoryRequest is how
+    # many sandboxes will be packed, and that count times your mean usage should
+    # stay under the backpressure watermark. Re-derive it after a node type change
+    # or a shift in sandbox workload mix.
     memoryRequest: ""
     cpuRequest: ""
     # Default per-sandbox memory limit merged into the template's sandbox
