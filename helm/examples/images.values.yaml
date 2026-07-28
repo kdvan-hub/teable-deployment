@@ -34,7 +34,7 @@ infraService:
 imagePreheater:
   image: ghcr.io/teableio/opensandbox-image-committer:v0.1.0
   images:
-  - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2
+  - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3
   - ghcr.io/teableio/opensandbox-egress:v1.0.12
 global:
   sandboxScheduling:
@@ -51,7 +51,7 @@ opensandbox-server:
   server:
     image:
       repository: ghcr.io/teableio/opensandbox-server
-      tag: v0.2.0-fix6
+      tag: v0.2.0-fix7
     gateway:
       image:
         repository: ghcr.io/teableio/opensandbox-ingress

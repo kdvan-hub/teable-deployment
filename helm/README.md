@@ -191,6 +191,80 @@ running against the platform release manifest (`versions.yaml`) and reports one
 of three states: compatible, upgrade the Teable app, or an unknown (unverified)
 component combination.
 
+## Hardening sandboxes
+
+Sandboxes run as root with an unconfined seccomp profile by default, because
+the sandbox entrypoint historically fixed up volume ownership at startup. Two
+switches tighten that; both only affect **new** sandboxes, and both override
+the matching fields of a `batchSandboxTemplate` you provide:
+
+```yaml
+global:
+  sandboxSecurity:
+    seccompProfile: RuntimeDefault   # replaces the default Unconfined profile
+    nonRoot:
+      enabled: true                  # uid/gid 1000, no privilege escalation, all capabilities dropped
+```
+
+`seccompProfile` is safe to flip on its own. `nonRoot` needs preparation:
+
+- It requires `opensandbox-server` >= `v0.2.0-fix7` and `opensandbox-execd` >=
+  `v1.0.19-fix3` -- the versions pinned by this release. With an older execd
+  every command inside a non-root sandbox fails with `operation not permitted`.
+  The identity is fixed at uid/gid 1000, matching the agent image; a different
+  uid would hit the same failure.
+- Agents can no longer install **system** packages (`sudo apt-get install`);
+  user-space installs (`uv`, `pip`, `npm`, `pnpm`) are unaffected, so
+  pre-install the system packages your workloads need in the sandbox image.
+- On a **shared** sandbox volume (one PVC mounted into every sandbox under
+  per-sandbox `subPath`s) two things need handling -- see below.
+
+Rolling back means setting both switches back **and** pinning the previous
+image versions -- the template and the execd version are a matched pair.
+
+### Shared sandbox volumes
+
+Skip this if your sandboxes only use the default `emptyDir` workspace.
+
+Existing files written by earlier root sandboxes stay root-owned and become
+read-only. Chown them once, from any pod that mounts the volume:
+
+```bash
+find /mnt/agent-data -uid 0 | head          # what would break
+chown -R 1000:1000 /mnt/agent-data/teable   # one-time migration
+```
+
+That covers what already exists. New `subPath` directories are created by the
+kubelet as `root:root` whenever a new user gets their first sandbox, so an
+unprivileged sandbox could not write them either. The server pre-creates them
+instead -- mount the same PVC into the server and declare the mapping:
+
+```yaml
+opensandbox-server:
+  server:
+    volumes:
+      - name: agent-data
+        persistentVolumeClaim:
+          claimName: <your sandbox PVC>
+    volumeMounts:
+      - name: agent-data
+        mountPath: /mnt/agent-data
+  configToml: |
+    ...                                   # keep the rest of your config
+    [kubernetes.volume_subpath_precreate]
+    uid = 1000
+    gid = 1000
+
+    [kubernetes.volume_subpath_precreate.mounts]
+    # sandbox-side claim name = where the server mounts that same volume
+    "<your sandbox PVC>" = "/mnt/agent-data"
+```
+
+The server runs in the control-plane namespace and creates each directory with
+the right owner before starting the sandbox; read-only mounts are skipped. Get
+the claim name wrong and pre-creation is silently skipped -- verify with a fresh
+user's first sandbox, not an existing one.
+
 ## Private CA / self-signed certificates
 
 If your Teable hosts serve certificates from a private/corporate CA, sandboxes

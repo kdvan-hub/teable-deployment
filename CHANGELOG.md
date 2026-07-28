@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Sandboxes can run unprivileged.** `global.sandboxSecurity.nonRoot.enabled=true`
+  runs new sandboxes as uid 1000 with all capabilities dropped, and
+  `seccompProfile: RuntimeDefault` hardens the profile. Both off by default;
+  read "Hardening sandboxes" in `helm/README.md` before enabling.
+- **Sandbox engine `v0.2.0-fix7`, execd `v1.0.19-fix3`** (required by the
+  switch above). Helm installs get them from `versions.yaml`; Docker installs
+  on the next `apply.sh`.
+
 ## v2026.7.22 - 2026-07-28
 
 - **New guide for sizing sandbox capacity.** `global.sandboxScheduling.memoryRequest`

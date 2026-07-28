@@ -243,12 +243,38 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if $ca.enabled -}}true{{- end -}}
 {{- end }}
 
+{{- /* ---- Sandbox security hardening (helm/README.md) ----
+       global.sandboxSecurity is one knob shared with the umbrella chart. Unlike
+       every other overlay here, these switches WIN over the operator template:
+       the shipped templates set runAsUser: 0 explicitly, so "template wins"
+       would make the switch a no-op. */}}
+
+{{- define "opensandbox-server.securityValues" -}}
+{{- $sec := dict -}}
+{{- with .Values.global }}{{- with .sandboxSecurity }}{{- $sec = . -}}{{- end }}{{- end -}}
+{{- toYaml $sec -}}
+{{- end }}
+
+{{- define "opensandbox-server.securityNonRootEnabled" -}}
+{{- $sec := fromYaml (include "opensandbox-server.securityValues" .) -}}
+{{- with $sec.nonRoot }}{{- if .enabled -}}true{{- end }}{{- end -}}
+{{- end }}
+
+{{- define "opensandbox-server.securitySeccompProfile" -}}
+{{- $sec := fromYaml (include "opensandbox-server.securityValues" .) -}}
+{{- $sec.seccompProfile | default "" -}}
+{{- end }}
+
+{{- define "opensandbox-server.securityEnabled" -}}
+{{- if or (include "opensandbox-server.securityNonRootEnabled" .) (include "opensandbox-server.securitySeccompProfile" .) -}}true{{- end -}}
+{{- end }}
+
 {{- /* True when a batchsandbox template must be mounted: either the operator
-       provided one, or scheduling/private-CA switches synthesize one.
+       provided one, or scheduling/private-CA/hardening switches synthesize one.
        config.toml already points at the file path by default, so mounting it
        is always safe. */}}
 {{- define "opensandbox-server.hasBatchSandboxTemplate" -}}
-{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) (include "opensandbox-server.privateCaEnabled" .) -}}true{{- end -}}
+{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) (include "opensandbox-server.privateCaEnabled" .) (include "opensandbox-server.securityEnabled" .) -}}true{{- end -}}
 {{- end }}
 
 {{- /* Render the batchsandbox template with scheduling switches applied.
@@ -259,7 +285,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- $packing := include "opensandbox-server.schedulingPackingEnabled" . -}}
 {{- $memoryLimit := include "opensandbox-server.schedulingMemoryLimit" . -}}
 {{- $privateCa := include "opensandbox-server.privateCaEnabled" . -}}
-{{- if not (or $packing $memoryLimit $privateCa) -}}
+{{- $nonRoot := include "opensandbox-server.securityNonRootEnabled" . -}}
+{{- $seccomp := include "opensandbox-server.securitySeccompProfile" . -}}
+{{- if not (or $packing $memoryLimit $privateCa $nonRoot $seccomp) -}}
 {{- .Values.server.batchSandboxTemplate -}}
 {{- else -}}
 {{- $tpl := dict -}}
@@ -376,6 +404,73 @@ spec:
 {{- $newPodSpec := $template.spec | default dict -}}
 {{- $_ := set $newPodSpec "containers" $containers -}}
 {{- $_ := set $newPodSpec "volumes" $volumes -}}
+{{- $_ := set $template "spec" $newPodSpec -}}
+{{- $_ := set $spec "template" $template -}}
+{{- $_ := set $merged "spec" $spec -}}
+{{- end -}}
+{{- if or $nonRoot $seccomp -}}
+{{- $sec := fromYaml (include "opensandbox-server.securityValues" .) -}}
+{{- $podSpec := dig "spec" "template" "spec" dict $merged -}}
+{{- $podSc := $podSpec.securityContext | default dict -}}
+{{- if $seccomp -}}
+{{- $_ := set $podSc "seccompProfile" (dict "type" $seccomp) -}}
+{{- end -}}
+{{- $containers := $podSpec.containers | default list -}}
+{{- /* Container-level securityContext wins over the pod-level one, so every
+       field the switches own has to be written at BOTH levels: a template
+       carrying a container-level runAsUser: 0 would otherwise contradict
+       runAsNonRoot (pod fails to start), and a container-level Unconfined
+       profile would survive the seccomp switch. Container-level fields reach
+       the pod through the server's template backfill (opensandbox-server >=
+       v0.2.0-fix7); older servers drop them. */ -}}
+{{- $hardened := dict -}}
+{{- if $seccomp -}}
+{{- $_ := set $hardened "seccompProfile" (dict "type" $seccomp) -}}
+{{- end -}}
+{{- if $nonRoot -}}
+{{- /* uid/gid are fixed, not configurable: execd only skips the credential
+       switch when the identity it runs as equals the identity the command asks
+       for, and the agent image bakes in uid/gid 1000. Any other value calls
+       setgroups() without CAP_SETGID and every command fails with "operation
+       not permitted". */ -}}
+{{- $uid := 1000 -}}
+{{- $gid := 1000 -}}
+{{- $_ := set $podSc "runAsUser" $uid -}}
+{{- $_ := set $podSc "runAsGroup" $gid -}}
+{{- $_ := set $podSc "runAsNonRoot" true -}}
+{{- /* fsGroup: 0 only existed so the root entrypoint could hand volumes over,
+       and it now conflicts with the non-root identity. A deliberate non-zero
+       fsGroup is how some CSI drivers grant an unprivileged process access to
+       a persistent volume, so leave that one alone. */ -}}
+{{- if eq (toString ($podSc.fsGroup | default 0)) "0" -}}
+{{- $_ := unset $podSc "fsGroup" -}}
+{{- $_ := unset $podSc "fsGroupChangePolicy" -}}
+{{- end -}}
+{{- $_ := set $hardened "runAsUser" $uid -}}
+{{- $_ := set $hardened "runAsGroup" $gid -}}
+{{- $_ := set $hardened "runAsNonRoot" true -}}
+{{- $_ := set $hardened "allowPrivilegeEscalation" false -}}
+{{- /* Whole map, not a merge: a template's capabilities.add would survive a
+       deep merge and hand the capability straight back after the drop. */ -}}
+{{- $_ := set $hardened "capabilities" (dict "drop" (list "ALL")) -}}
+{{- end -}}
+{{- $touched := false -}}
+{{- range $c := $containers -}}
+{{- if eq (get $c "name") "sandbox" -}}
+{{- $cSc := $c.securityContext | default dict -}}
+{{- range $k := keys $hardened }}{{- $_ := set $cSc $k (get $hardened $k) -}}{{- end -}}
+{{- $_ := set $c "securityContext" $cSc -}}
+{{- $touched = true -}}
+{{- end -}}
+{{- end -}}
+{{- if not $touched -}}
+{{- $containers = append $containers (dict "name" "sandbox" "securityContext" $hardened) -}}
+{{- end -}}
+{{- $spec := $merged.spec | default dict -}}
+{{- $template := $spec.template | default dict -}}
+{{- $newPodSpec := $template.spec | default dict -}}
+{{- $_ := set $newPodSpec "securityContext" $podSc -}}
+{{- $_ := set $newPodSpec "containers" $containers -}}
 {{- $_ := set $template "spec" $newPodSpec -}}
 {{- $_ := set $spec "template" $template -}}
 {{- $_ := set $merged "spec" $spec -}}

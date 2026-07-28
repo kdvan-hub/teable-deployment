@@ -41,7 +41,7 @@ server:
   # -- Server image configuration
   image:
     repository: ghcr.io/teableio/opensandbox-server
-    tag: "v0.2.0-fix6"
+    tag: "v0.2.0-fix7"
 
   # -- Number of server replicas
   replicaCount: 2
@@ -65,8 +65,10 @@ server:
   # Scheduling switches (bin-packing affinity, request envs, default memory
   # limit) live under global.sandboxScheduling — one knob shared with the
   # umbrella chart. See docs/sandbox-scheduling-v2.md. Private CA trust lives
-  # under global.sandboxPrivateCa (see helm/private-ca.md). The template below
-  # is merged with those switches at render time; operator values win.
+  # under global.sandboxPrivateCa (see helm/private-ca.md), and the non-root /
+  # seccomp hardening switches under global.sandboxSecurity. The template below
+  # is merged with those switches at render time; operator values win, except
+  # for the securityContext fields global.sandboxSecurity owns.
   batchSandboxTemplate: ""
 
   # Egress policy applied to sandbox Pods in the dataplane namespace.
@@ -192,7 +194,7 @@ configToml: |
 
   [runtime]
   type = "kubernetes"
-  execd_image = "ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2"
+  execd_image = "ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3"
 
   [kubernetes]
   kubeconfig_path = ""

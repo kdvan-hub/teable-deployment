@@ -251,7 +251,7 @@ data:
 
     [runtime]
     type = "kubernetes"
-    execd_image = "ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2"
+    execd_image = "ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3"
 
     [kubernetes]
     kubeconfig_path = ""
@@ -1403,7 +1403,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: opensandbox
   annotations:
-    teable.ai/preheat-images: '["ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2","ghcr.io/teableio/opensandbox-egress:v1.0.12"]'
+    teable.ai/preheat-images: '["ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3","ghcr.io/teableio/opensandbox-egress:v1.0.12"]'
 spec:
   selector:
     matchLabels:
@@ -1416,7 +1416,7 @@ spec:
         app.kubernetes.io/instance: teable
         app.kubernetes.io/part-of: opensandbox
       annotations:
-        teable.ai/preheat-images: '["ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2","ghcr.io/teableio/opensandbox-egress:v1.0.12"]'
+        teable.ai/preheat-images: '["ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3","ghcr.io/teableio/opensandbox-egress:v1.0.12"]'
     spec:
       containers:
       - name: preheater
@@ -1437,7 +1437,7 @@ spec:
 
           while true; do
             ok=1
-            image="ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2"
+            image="ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3"
             attempt=1
             pulled=0
             while [ "$attempt" -le 3 ]; do
@@ -1664,7 +1664,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config-toml: 021b7064c7a4f874b83e7da06d399c5cfa8971eab7cc715a02ecdec429751ef8
+        checksum/config-toml: 76a45013de0c8861e3681ee4689b5d91558bb3bb88fe63c89973e2eb7b4b6306
         checksum/batchsandbox-template: c1e2c364bbfee5f6fd2a80f821ca6412e7c3675ec3d0aa18b83f64a42b144e3a
       labels:
         app.kubernetes.io/name: opensandbox-server
@@ -1674,7 +1674,7 @@ spec:
       serviceAccountName: opensandbox-server
       containers:
       - name: main
-        image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix6
+        image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix7
         imagePullPolicy: IfNotPresent
         command:
         - "/bin/sh"

@@ -117,6 +117,28 @@ global:
   # the routing contract for the entry operator.
   entry:
     mode: ""
+  # ---- Sandbox security hardening (helm/README.md) ----
+  # Both switches change the sandbox pod template of NEW sandboxes only, and
+  # both OVERRIDE the corresponding fields of an operator batchSandboxTemplate
+  # (the shipped templates pin runAsUser: 0, so "template wins" would make them
+  # no-ops). Rollback is setting them back.
+  sandboxSecurity:
+    # Pod-level seccomp profile. Empty keeps whatever the template says
+    # (Unconfined by default); "RuntimeDefault" is the hardened setting.
+    seccompProfile: ""
+    # Run sandboxes as uid/gid 1000 (the identity baked into the agent image),
+    # with privilege escalation denied and all capabilities dropped. REQUIRES
+    # opensandbox-server >= v0.2.0-fix7 (container-level securityContext
+    # backfill) and opensandbox-execd >= v1.0.19-fix3 (an older execd fails
+    # every command with "operation not permitted" when the sandbox is not
+    # root) -- both are the pinned versions of this release.
+    # Two consequences to plan for: agents can no longer install system
+    # packages with sudo (user-space installs via uv/pip/npm/pnpm are
+    # unaffected), and a shared sandbox volume needs a one-time migration plus
+    # subPath pre-creation -- see "Hardening sandboxes" in helm/README.md.
+    nonRoot:
+      enabled: false
+
   # ---- Sandbox private CA trust (helm/private-ca.md) ----
   # Corporate/private CA trust for sandboxes. When enabled, the bundle from the
   # named ConfigMap is mounted OVER the OS trust store of every new sandbox, so
@@ -220,7 +242,7 @@ imagePreheater:
   # agent image is NOT listed here: the Teable app preheats its own agent image through
   # the Infra API on startup (prefix + its own release tag).
   images:
-    - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2
+    - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3
     - ghcr.io/teableio/opensandbox-egress:v1.0.12
 
 # Sandbox dataplane namespace (where BatchSandbox pods run). Must match the
