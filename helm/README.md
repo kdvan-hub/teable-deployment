@@ -86,6 +86,17 @@ component (`gitRegistry.persistence` / `infraService.victoriaMetrics.persistentV
 Both PVCs carry `helm.sh/resource-policy: keep`, so `helm uninstall` leaves
 the data in place; delete the PVC explicitly to discard it.
 
+## Sandbox capacity
+
+How many sandboxes fit on a node is derived from one value —
+`global.sandboxScheduling.memoryRequest`, the "price of a seat" the scheduler
+subtracts from node allocatable memory. Set too low it oversubscribes nodes and
+sessions get OOM-killed; set too high the cluster refuses new sandboxes while
+nodes look idle. Start at `1300Mi` for a mixed AI-session and app-build
+workload, and re-derive it if yours differs — see
+[`sandbox-capacity.md`](sandbox-capacity.md) for the sizing method, a worked
+per-node example, and the related limit/backpressure knobs.
+
 ## External gateway entry (no ingress controller)
 
 If an external SLB/nginx terminates TLS in front of the cluster, set:
