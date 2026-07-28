@@ -12,11 +12,14 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 ## v2026.7.22 - 2026-07-28
 
 - **New guide for sizing sandbox capacity.** `global.sandboxScheduling.memoryRequest`
-  is what decides how many sandboxes fit on a node, and both a too-low and a
-  too-high value fail in confusing ways. Start at `1300Mi` for a mixed
-  AI-session and app-build workload, then re-derive it from your own usage --
-  see `helm/sandbox-capacity.md`. No action needed if your current density
-  already works.
+  decides how many sandboxes fit on a node, and both a too-low and a too-high
+  value fail in confusing ways. Start at `1300Mi` for a mixed AI-session and
+  app-build workload (roughly 21 sandboxes on a 32 GiB node), then re-derive it
+  from your own usage. The guide also covers the kubelet memory reservation
+  bin-packing needs -- without it a full node can starve its own kubelet while
+  the cloud console still reports the instance healthy. See
+  `helm/sandbox-capacity.md`; if bin-packing is already on, check your node
+  reservation against it.
 
 ## v2026.7.21 - 2026-07-28
 

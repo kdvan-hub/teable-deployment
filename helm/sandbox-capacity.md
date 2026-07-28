@@ -57,24 +57,69 @@ global:
     cpuRequest: "50m"
 ```
 
-1300Mi suits a **mixed workload** — interactive AI sessions plus occasional app
-builds — which is what most deployments actually run. It leaves room for a
-session to pull in a toolchain without immediately pushing the node past its
-watermark.
+1300Mi is not a round guess — it comes from measuring a **mixed workload**
+(interactive AI sessions plus app builds) on our own fleet:
 
-Worked example on a 32 GiB node (≈30 GiB allocatable after kubelet and system
-reservations):
+| Measured, per sandbox | Value |
+| --- | --- |
+| p50 | ≈ 850Mi |
+| mean | ≈ 1.1GiB |
+| p90 | ≈ 2.2GiB |
+| max observed | ≈ 2.6GiB |
+
+1300Mi sits just above the mean, so a fully booked node lands around 80% of
+allocatable at the typical footprint — enough headroom under the 90% watermark
+to absorb the p90 tail without the node going into reclaim.
+
+Worked example on a 32 GiB node. Note that allocatable is **not** 32 GiB and
+not 30 GiB: after kubelet and system reservations a 32 GiB machine reports
+roughly 27–28 GiB, and it drops further once you set the kubelet reservation
+this workload actually needs (see the prerequisite below). At 28 GiB
+allocatable:
 
 | memoryRequest | seats per node | comment |
 | --- | --- | --- |
-| 700Mi | ≈ 43 | dense; only safe when sessions are consistently light |
-| **1300Mi** | **≈ 23** | recommended starting point for mixed workloads |
-| 2Gi | ≈ 15 | build-heavy deployments |
-| 3Gi | ≈ 10 | data-processing workloads |
+| 700Mi | ≈ 40 | oversubscribed for this workload: 40 × 1.1GiB mean ≈ 150% of allocatable |
+| **1300Mi** | **≈ 21** | recommended starting point for mixed workloads |
+| 2Gi | ≈ 14 | build-heavy deployments |
+| 3Gi | ≈ 9 | data-processing workloads |
+
+The 700Mi row is what a too-low request looks like in practice, and it is not
+hypothetical: the node fills to its *booked* capacity long before it fills to
+its real one, and the kernel resolves the difference.
 
 Leaving `memoryRequest` empty keeps the server's built-in default and does not
 change existing behavior — that is the chart default, so upgrades never move
 your density underneath you. Setting it is an explicit decision.
+
+## Prerequisite: reserve memory for the kubelet
+
+Sizing the request correctly is only half of it. Bin-packing **deliberately**
+fills sandbox nodes, and the default kubelet reservation most provisioners
+apply (on the order of 1 GiB for a 32 GiB machine) is not sized for that. Get
+this wrong and the failure is nastier than a normal OOM:
+
+The node climbs past 90%, the kernel starts thrashing on reclaim, and the
+kubelet itself stops being served — it stops answering the API server, and
+sandboxes on it hang in `Terminating`. **The cloud console still shows the
+instance running with health checks passing**, so no autoscaler, no node
+auto-repair and no health check will touch it. It has to be replaced by hand.
+
+Two things bite during rollout:
+
+- **The reservation is baked in at node bootstrap.** Setting it only affects
+  *new* nodes — existing nodes have to be rotated before they are covered.
+- **A node already wedged must be replaced, not rebooted.** A reboot brings
+  back the old bootstrap configuration along with the node.
+
+Backpressure does not cover this gap: the taint stops *new* sandboxes from
+landing, but pods already on the node keep growing.
+
+Where you set it depends on your provisioner — Karpenter
+(`EC2NodeClass.spec.kubelet`), GKE node system configuration, or kubelet flags
+directly. See the prerequisites note above `sandboxScheduling` in
+`teable-infra/values.yaml` for the per-provisioner locations and a concrete
+value for a 4-core / 32 GiB node.
 
 ## When you need a different number
 
