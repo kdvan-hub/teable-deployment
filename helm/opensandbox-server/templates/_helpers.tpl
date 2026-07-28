@@ -225,11 +225,30 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- $gs.memoryLimit | default "" -}}
 {{- end }}
 
+{{- /* ---- Sandbox private CA trust (delivery/public/helm/private-ca.md) ----
+       global.sandboxPrivateCa is one knob shared with the umbrella chart. When
+       enabled, the CA bundle is mounted over the OS trust store inside every
+       sandbox, so OpenSSL consumers (curl, git, python ssl, Go) trust it
+       without per-tool environment variables. Runtimes that ship their own
+       trust store (Node, python-certifi) get env pointers on top. */}}
+
+{{- define "opensandbox-server.privateCaValues" -}}
+{{- $ca := dict -}}
+{{- with .Values.global }}{{- with .sandboxPrivateCa }}{{- $ca = . -}}{{- end }}{{- end -}}
+{{- toYaml $ca -}}
+{{- end }}
+
+{{- define "opensandbox-server.privateCaEnabled" -}}
+{{- $ca := fromYaml (include "opensandbox-server.privateCaValues" .) -}}
+{{- if $ca.enabled -}}true{{- end -}}
+{{- end }}
+
 {{- /* True when a batchsandbox template must be mounted: either the operator
-       provided one, or scheduling switches synthesize one. config.toml already
-       points at the file path by default, so mounting it is always safe. */}}
+       provided one, or scheduling/private-CA switches synthesize one.
+       config.toml already points at the file path by default, so mounting it
+       is always safe. */}}
 {{- define "opensandbox-server.hasBatchSandboxTemplate" -}}
-{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) -}}true{{- end -}}
+{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) (include "opensandbox-server.privateCaEnabled" .) -}}true{{- end -}}
 {{- end }}
 
 {{- /* Render the batchsandbox template with scheduling switches applied.
@@ -239,7 +258,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "opensandbox-server.renderedBatchSandboxTemplate" -}}
 {{- $packing := include "opensandbox-server.schedulingPackingEnabled" . -}}
 {{- $memoryLimit := include "opensandbox-server.schedulingMemoryLimit" . -}}
-{{- if not (or $packing $memoryLimit) -}}
+{{- $privateCa := include "opensandbox-server.privateCaEnabled" . -}}
+{{- if not (or $packing $memoryLimit $privateCa) -}}
 {{- .Values.server.batchSandboxTemplate -}}
 {{- else -}}
 {{- $tpl := dict -}}
@@ -294,6 +314,68 @@ spec:
 {{- $template := $spec.template | default dict -}}
 {{- $newPodSpec := $template.spec | default dict -}}
 {{- $_ := set $newPodSpec "containers" $containers -}}
+{{- $_ := set $template "spec" $newPodSpec -}}
+{{- $_ := set $spec "template" $template -}}
+{{- $_ := set $merged "spec" $spec -}}
+{{- end -}}
+{{- if $privateCa -}}
+{{- $ca := fromYaml (include "opensandbox-server.privateCaValues" .) -}}
+{{- $caConfigMap := required "global.sandboxPrivateCa.configMapName is required when global.sandboxPrivateCa.enabled=true" $ca.configMapName -}}
+{{- $caKey := $ca.key | default "root-ca.crt" -}}
+{{- $caStorePath := $ca.caCertificatesPath | default "/etc/ssl/certs/ca-certificates.crt" -}}
+{{- $caFilePath := "/etc/ssl/private-ca/root-ca.crt" -}}
+{{- $caVolume := "sandbox-private-ca" -}}
+{{- $podSpec := dig "spec" "template" "spec" dict $merged -}}
+{{- $containers := $podSpec.containers | default list -}}
+{{- /* Overwriting the OS trust store means the ConfigMap must hold a full
+       bundle (public roots plus the corporate root), not a single root. */ -}}
+{{- $caMounts := list
+      (dict "name" $caVolume "mountPath" $caStorePath "subPath" $caKey "readOnly" true)
+      (dict "name" $caVolume "mountPath" $caFilePath "subPath" $caKey "readOnly" true) -}}
+{{- /* Runtimes that ignore the OS store get explicit pointers.
+       NODE_EXTRA_CA_CERTS extends Node's built-in roots; SSL_CERT_FILE covers
+       OpenSSL clients that resolve the store lazily (Python's ssl module, Go,
+       Ruby); REQUESTS_CA_BUNDLE covers requests/pip, which read certifi. All
+       three point at a full bundle, so their replace semantics are safe. */ -}}
+{{- $caEnv := list
+      (dict "name" "NODE_EXTRA_CA_CERTS" "value" $caFilePath)
+      (dict "name" "SSL_CERT_FILE" "value" $caStorePath)
+      (dict "name" "REQUESTS_CA_BUNDLE" "value" $caStorePath) -}}
+{{- $touched := false -}}
+{{- range $c := $containers -}}
+{{- if eq (get $c "name") "sandbox" -}}
+{{- /* Silently skipping a colliding mount would render happily while leaving
+       the sandbox trusting some other file, so a collision is a hard error. */ -}}
+{{- $mounts := $c.volumeMounts | default list -}}
+{{- range $m := $mounts -}}
+{{- if or (eq (get $m "mountPath") $caStorePath) (eq (get $m "mountPath") $caFilePath) -}}
+{{- fail (printf "server.batchSandboxTemplate already mounts %s; remove it or disable global.sandboxPrivateCa (the switch owns %s, %s and the volume %q)" (get $m "mountPath") $caStorePath $caFilePath $caVolume) -}}
+{{- end -}}
+{{- end -}}
+{{- $_ := set $c "volumeMounts" (concat $mounts $caMounts) -}}
+{{- $env := $c.env | default list -}}
+{{- $names := list -}}
+{{- range $e := $env }}{{- $names = append $names (get $e "name") -}}{{- end -}}
+{{- range $e := $caEnv }}{{- if not (has (get $e "name") $names) }}{{- $env = append $env $e -}}{{- end }}{{- end -}}
+{{- $_ := set $c "env" $env -}}
+{{- $touched = true -}}
+{{- end -}}
+{{- end -}}
+{{- if not $touched -}}
+{{- $containers = append $containers (dict "name" "sandbox" "volumeMounts" $caMounts "env" $caEnv) -}}
+{{- end -}}
+{{- $volumes := $podSpec.volumes | default list -}}
+{{- range $v := $volumes -}}
+{{- if eq (get $v "name") $caVolume -}}
+{{- fail (printf "server.batchSandboxTemplate already defines the volume %q, which global.sandboxPrivateCa owns; rename it" $caVolume) -}}
+{{- end -}}
+{{- end -}}
+{{- $volumes = append $volumes (dict "name" $caVolume "configMap" (dict "name" $caConfigMap)) -}}
+{{- $spec := $merged.spec | default dict -}}
+{{- $template := $spec.template | default dict -}}
+{{- $newPodSpec := $template.spec | default dict -}}
+{{- $_ := set $newPodSpec "containers" $containers -}}
+{{- $_ := set $newPodSpec "volumes" $volumes -}}
 {{- $_ := set $template "spec" $newPodSpec -}}
 {{- $_ := set $spec "template" $template -}}
 {{- $_ := set $merged "spec" $spec -}}

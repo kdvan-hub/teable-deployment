@@ -117,6 +117,27 @@ global:
   # the routing contract for the entry operator.
   entry:
     mode: ""
+  # ---- Sandbox private CA trust (helm/private-ca.md) ----
+  # Corporate/private CA trust for sandboxes. When enabled, the bundle from the
+  # named ConfigMap is mounted OVER the OS trust store of every new sandbox, so
+  # arbitrary user code (curl, git, python, Go, package managers) trusts it
+  # without per-tool environment variables; Node and python-certifi, which carry
+  # their own trust stores, additionally get NODE_EXTRA_CA_CERTS /
+  # REQUESTS_CA_BUNDLE. Because the OS store is replaced, the ConfigMap must
+  # hold a FULL bundle (public roots plus your corporate root). The ConfigMap
+  # must exist in the sandbox namespace (sandboxNamespace.name). Merged into
+  # batchSandboxTemplate at render time; an operator template wins on conflicts.
+  # Only NEW sandboxes pick it up, and rotation needs the ConfigMap updated plus
+  # existing sandboxes recycled (the mount uses subPath, which never refreshes).
+  sandboxPrivateCa:
+    enabled: false
+    configMapName: ""
+    # ConfigMap key holding the PEM bundle.
+    key: root-ca.crt
+    # OS trust store path inside the sandbox image (Debian/Alpine default).
+    # Red Hat based images use /etc/pki/tls/certs/ca-bundle.crt.
+    caCertificatesPath: /etc/ssl/certs/ca-certificates.crt
+
   # ---- Sandbox scheduling v2 (docs/sandbox-scheduling-v2.md) ----
   # One knob shared by this chart (headroom balloons, backpressure loop) and the
   # opensandbox-server sub-chart (pod template merge, request envs). Defaults

@@ -15,96 +15,97 @@ Typical symptoms: the stack is healthy and the UI works, but AI sessions fail
 right after starting, or app builds fail on `git push`.
 
 Publicly trusted certificates (the default `letsencrypt-dns` issuer) never
-need any of this. On a private PKI, pick one of the two sandbox options
-below -- and if you publish apps, additionally enable the App Runtime block
-described in
+need any of this. On a private PKI, use Option A below -- and if you publish
+apps, additionally enable the App Runtime block described in
 [Published apps (App Runtime) and the Infra Service](#published-apps-app-runtime-and-the-infra-service).
-Both sandbox options work by overriding the sandbox pod template
-(`opensandbox-server.server.batchSandboxTemplate`) in your values file --
-copy the default block from `helm/teable-infra/values.yaml` and add the
-marked lines.
 
-## Option A (recommended): mount your root CA into every sandbox
+## Option A (recommended): trust your CA inside every sandbox
 
-1. Provide your root CA certificate as a PEM file, e.g. `root-ca.crt`, and
-   create a ConfigMap in the **sandbox namespace** (`teable-sandbox` by
-   default; use your `sandboxNamespace` override if you changed it):
+Sandboxes run arbitrary user and agent code, so trust has to sit in the
+**operating system** store rather than in a handful of per-tool environment
+variables: Node, Python, curl, git, Go and package managers each resolve
+certificates differently, and an environment variable only covers the runtime
+that reads it. This option mounts your bundle over the sandbox OS trust store,
+which covers every tool that reads the system CA path, and adds pointers for
+the two runtimes that ship their own store (Node and Python's `certifi`).
+
+1. Build a **full CA bundle** -- the public root certificates with your
+   corporate root appended, not the corporate root alone. The mount replaces
+   the OS trust store, so a single root would leave sandboxes unable to reach
+   the public internet. On a Debian-based machine:
+
+   ```bash
+   cat /etc/ssl/certs/ca-certificates.crt root-ca.crt > ca-bundle.crt
+   ```
+
+2. Create a ConfigMap in the **sandbox namespace** (`teable-sandbox` by
+   default; use your `sandboxNamespace` override if you changed it), under the
+   `root-ca.crt` key:
 
    ```bash
    kubectl -n teable-sandbox create configmap sandbox-root-ca \
-     --from-file=root-ca.crt=./root-ca.crt
+     --from-file=root-ca.crt=./ca-bundle.crt
    ```
 
-2. Override the sandbox pod template in your values -- the default block plus
-   the four marked additions:
+3. Enable the values block:
 
    ```yaml
-   opensandbox-server:
-     server:
-       batchSandboxTemplate: |
-         # Metadata template (merged with runtime-generated metadata)
-         metadata:
-         # Spec template
-         spec:
-           replicas: 1
-           template:
-             spec:
-               restartPolicy: Never
-               securityContext:
-                 runAsUser: 0
-                 runAsGroup: 0
-                 fsGroup: 0
-                 fsGroupChangePolicy: OnRootMismatch
-                 seccompProfile:
-                   type: Unconfined
-               containers:
-                 - name: sandbox
-                   volumeMounts:
-                     - name: workspace-state
-                       mountPath: /home/agent/workspace-state
-                     - name: sandbox-root-ca                    # added
-                       mountPath: /etc/ssl/private-ca/root-ca.crt
-                       subPath: root-ca.crt
-                       readOnly: true
-                   env:                                         # added
-                     - name: NODE_EXTRA_CA_CERTS
-                       value: /etc/ssl/private-ca/root-ca.crt
-               volumes:
-                 - name: workspace-state
-                   emptyDir: {}
-                 - name: sandbox-root-ca                        # added
-                   configMap:
-                     name: sandbox-root-ca
+   global:
+     sandboxPrivateCa:
+       enabled: true
+       configMapName: sandbox-root-ca
    ```
 
-3. `helm upgrade` with your values. Only **new** sandboxes pick the template
-   up; sandboxes are ephemeral, so the fleet converges on its own (or delete
-   the running ones to force it).
+4. `helm upgrade` with your values. Only **new** sandboxes pick the change up;
+   sandboxes are ephemeral, so the fleet converges on its own (or delete the
+   running ones to force it).
 
-`NODE_EXTRA_CA_CERTS` **extends** the default trust store and covers the AI
-agent and Node tooling -- the paths Teable itself depends on. If user code
-inside sandboxes also reaches your internal hosts with Python or curl/git,
-additionally set:
+What this renders into each sandbox pod:
 
-```yaml
-                     - name: SSL_CERT_FILE
-                       value: /etc/ssl/private-ca/root-ca.crt
-                     - name: REQUESTS_CA_BUNDLE
-                       value: /etc/ssl/private-ca/root-ca.crt
-                     - name: CURL_CA_BUNDLE
-                       value: /etc/ssl/private-ca/root-ca.crt
-                     - name: GIT_SSL_CAINFO
-                       value: /etc/ssl/private-ca/root-ca.crt
-```
+- the bundle mounted read-only at `/etc/ssl/certs/ca-certificates.crt`, the
+  default OpenSSL trust store -- curl, git, Python's `ssl`, Go and most system
+  tools trust your CA with no further configuration;
+- the same file at `/etc/ssl/private-ca/root-ca.crt` as a stable path;
+- `NODE_EXTRA_CA_CERTS` (Node keeps its own built-in roots and *extends* them
+  with your CA), `SSL_CERT_FILE` (OpenSSL clients that resolve the store
+  lazily, including Python's `ssl` module and Go) and `REQUESTS_CA_BUNDLE` (so
+  `requests` and `pip` use the bundle instead of the `certifi` copy they ship).
+  All three point at the full bundle, so nothing loses the public roots.
 
-Unlike `NODE_EXTRA_CA_CERTS`, these **replace** the default store instead of
-extending it. If sandboxes must also reach the public internet, point them at
-a full bundle (public roots plus your CA appended) instead of the single root
-certificate.
+Two knobs exist for non-standard images: `key` (ConfigMap key, default
+`root-ca.crt`) and `caCertificatesPath` (OS trust store path, default
+`/etc/ssl/certs/ca-certificates.crt`; Red Hat based images use
+`/etc/pki/tls/certs/ca-bundle.crt`). If your own `batchSandboxTemplate`
+already sets one of the environment variables above, your value wins.
+
+Both mount paths and the volume name `sandbox-private-ca` belong to the
+switch: if your own `batchSandboxTemplate` already uses one of them, `helm`
+fails with an explicit message rather than silently trusting the wrong file.
+
+Not covered:
+
+- **Java**, which reads its own `cacerts` keystore -- import the CA with
+  `keytool` from within the session;
+- tools that were pointed at a different CA file explicitly, or that carry a
+  statically linked trust store -- notably Python clients that default to
+  `certifi` without honouring the environment, such as `httpx` (pass
+  `verify="/etc/ssl/certs/ca-certificates.crt"`);
+- **rewriting the trust store from inside the sandbox**. The system CA file is
+  a read-only mount, so `update-ca-certificates` -- and therefore installing or
+  upgrading the `ca-certificates` package -- fails inside a sandbox while this
+  option is enabled. Add certificates to the ConfigMap bundle instead.
+
+When rotating the CA, updating the ConfigMap is not enough for sandboxes that
+are already running -- the certificate is mounted via `subPath`, which never
+picks up ConfigMap changes. New sandboxes get the new bundle; recycle the
+running ones.
 
 ## Option B (trial only): disable TLS verification
 
-Same template override, but instead of the mount:
+Instead of mounting a bundle, override the sandbox pod template
+(`opensandbox-server.server.batchSandboxTemplate`) in your values file -- copy
+the default block from `helm/teable-infra/values.yaml` and add an environment
+variable to the `sandbox` container:
 
 ```yaml
                    env:

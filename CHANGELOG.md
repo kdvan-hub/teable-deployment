@@ -9,6 +9,15 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Private CA trust for sandboxes is now a values switch.** Set
+  `global.sandboxPrivateCa.enabled=true` and point `configMapName` at a
+  ConfigMap holding a full CA bundle (public roots plus your corporate root);
+  new sandboxes then trust it system-wide instead of in Node only. If you
+  hand-edited `batchSandboxTemplate` for a private CA, move to the switch and
+  drop those lines -- see `helm/private-ca.md`.
+
 ## v2026.7.20 - 2026-07-27
 
 - **A failed app update no longer takes down the running version, and sleeping
