@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.7.23 - 2026-07-28
 
 - **Sandboxes can run unprivileged.** `global.sandboxSecurity.nonRoot.enabled=true`
   runs new sandboxes as uid 1000 with all capabilities dropped, and

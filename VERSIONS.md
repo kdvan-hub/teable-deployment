@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.7.22** (2026-07-28T13:35:09Z) -- do not edit
+> Generated for platform release **v2026.7.23** (2026-07-28T14:16:11Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -16,11 +16,11 @@ across releases. What changed between releases: [`CHANGELOG.md`](CHANGELOG.md).
 | `teable-sandbox-agent` | `ghcr.io/teableio/teable-sandbox-agent` | - | Prefix only, no tag: at runtime the app pulls `<prefix>:<its own release tag>`, so sandbox hosts need registry access |
 | `teable-app-runtime` | `ghcr.io/teableio/teable-app-runtime:20260717T042653Z` | amd64, arm64 |  |
 | `teable-infra-service` | `ghcr.io/teableio/teable-infra-service:20260727T140626Z` | amd64, arm64 |  |
-| `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix6` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5) and docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6) |
+| `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix7` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6), and the container-level securityContext backfill plus shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7) |
 | `opensandbox-ingress` | `ghcr.io/teableio/opensandbox-ingress:v1.0.7` | amd64, arm64 |  |
 | `opensandbox-controller` | `ghcr.io/teableio/opensandbox-controller:v0.2.0` | amd64, arm64 |  |
 | `opensandbox-image-committer` | `ghcr.io/teableio/opensandbox-image-committer:v0.1.0` | amd64, arm64 | Also runs the node image-preheater DaemonSet. |
-| `opensandbox-execd` | `ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2` | amd64, arm64 | Patched build: upstream v1.0.19 (the execd release matching server v0.2.0) plus the issue #1064 fix (owner/group on auto-created parent directories) |
+| `opensandbox-execd` | `ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3` | amd64, arm64 | Patched build: upstream v1.0.19 (the execd release matching server v0.2.0), the issue #1064 fix (owner/group on auto-created parent directories) and, from fix3, the credential handling an unprivileged sandbox needs (an older execd fails every command with `operation not permitted`) |
 | `opensandbox-egress` | `ghcr.io/teableio/opensandbox-egress:v1.0.12` | amd64, arm64 | Per-sandbox egress sidecar, started by the server on demand. |
 | `postgres` | `postgres:15.4` | amd64, arm64 |  |
 | `redis` | `redis:7.2.4` | amd64, arm64 |  |

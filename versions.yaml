@@ -5,8 +5,8 @@
 # China deployments: every ghcr.io/teableio/ image is mirrored with identical
 # tags at registry.cn-shenzhen.aliyuncs.com/teable/ (digests differ per registry; the
 # digests below are for the canonical registry shown in each reference).
-platformRelease: v2026.7.22
-releasedAt: '2026-07-28T13:35:09Z'
+platformRelease: v2026.7.23
+releasedAt: '2026-07-28T14:16:11Z'
 components:
   teable:
     image: ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393
@@ -34,14 +34,16 @@ components:
     - amd64
     - arm64
   opensandbox-server:
-    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix6
-    digest: sha256:e0567927f6f34d7808525b4b70f69d7b53ce9c2026692fe04f04deb280c3dd28
+    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix7
+    digest: sha256:b9ece1732db4733e0be98df9ff7fe9d2fc105c5dad02da083e2c1e31fb76ce06
     architectures:
     - amd64
     - arm64
     note: 'Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints
-      (path-proxy mode needs >= fix5) and docker-runtime sandbox_env/sandbox_binds
-      for private-CA trust (>= fix6); upstream does not include them yet.'
+      (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for
+      private-CA trust (>= fix6), and the container-level securityContext backfill
+      plus shared-volume subPath pre-creation that unprivileged sandboxes need (>=
+      fix7); upstream does not include them yet.'
   opensandbox-ingress:
     image: ghcr.io/teableio/opensandbox-ingress:v1.0.7
     digest: sha256:f67bef778e4c80c7de182f76a213363ba2c5214c323823b364cda859dbd36198
@@ -62,14 +64,16 @@ components:
     - arm64
     note: Also runs the node image-preheater DaemonSet.
   opensandbox-execd:
-    image: ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2
-    digest: sha256:3fc27eca84075fc053255305293336fd7f6d83fa1530e0a0f9e84b36f9c87d1b
+    image: ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3
+    digest: sha256:996e8460bd58ef7fb2680a2884f3a36ddf37755fc819f942b5f70a82b745c11b
     architectures:
     - amd64
     - arm64
-    note: 'Patched build: upstream v1.0.19 (the execd release matching server v0.2.0)
-      plus the issue #1064 fix (owner/group on auto-created parent directories); injected
-      by the server into every sandbox.'
+    note: 'Patched build: upstream v1.0.19 (the execd release matching server v0.2.0),
+      the issue #1064 fix (owner/group on auto-created parent directories) and, from
+      fix3, the credential handling an unprivileged sandbox needs (an older execd
+      fails every command with `operation not permitted`); injected by the server
+      into every sandbox.'
   opensandbox-egress:
     image: ghcr.io/teableio/opensandbox-egress:v1.0.12
     digest: sha256:ddf92e8f303c5715c8bbe8f346af80d7f14efaef6d760add92bf50e558b06c2a

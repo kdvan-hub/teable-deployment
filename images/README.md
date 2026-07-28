@@ -1,6 +1,6 @@
 # Images
 
-> Generated for platform release **v2026.7.22** -- do not edit by hand.
+> Generated for platform release **v2026.7.23** -- do not edit by hand.
 > The authoritative pin list (with digests) is [`../versions.yaml`](../versions.yaml).
 
 All first-party images are published multi-arch (amd64 + arm64) and
@@ -15,11 +15,11 @@ Every first-party image is mirrored with **identical tags**:
 | `ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393` | `registry.cn-shenzhen.aliyuncs.com/teable/teable:release.2026-07-27T10-51-13Z.2393` |
 | `ghcr.io/teableio/teable-app-runtime:20260717T042653Z` | `registry.cn-shenzhen.aliyuncs.com/teable/teable-app-runtime:20260717T042653Z` |
 | `ghcr.io/teableio/teable-infra-service:20260727T140626Z` | `registry.cn-shenzhen.aliyuncs.com/teable/teable-infra-service:20260727T140626Z` |
-| `ghcr.io/teableio/opensandbox-server:v0.2.0-fix6` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-server:v0.2.0-fix6` |
+| `ghcr.io/teableio/opensandbox-server:v0.2.0-fix7` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-server:v0.2.0-fix7` |
 | `ghcr.io/teableio/opensandbox-ingress:v1.0.7` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-ingress:v1.0.7` |
 | `ghcr.io/teableio/opensandbox-controller:v0.2.0` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-controller:v0.2.0` |
 | `ghcr.io/teableio/opensandbox-image-committer:v0.1.0` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-image-committer:v0.1.0` |
-| `ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-execd:v1.0.19-fix2` |
+| `ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-execd:v1.0.19-fix3` |
 | `ghcr.io/teableio/opensandbox-egress:v1.0.12` | `registry.cn-shenzhen.aliyuncs.com/teable/opensandbox-egress:v1.0.12` |
 
 Swap the prefix wherever an image is configured (`.env` for Docker, your
@@ -44,11 +44,11 @@ for img in \
     ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393 \
     ghcr.io/teableio/teable-app-runtime:20260717T042653Z \
     ghcr.io/teableio/teable-infra-service:20260727T140626Z \
-    ghcr.io/teableio/opensandbox-server:v0.2.0-fix6 \
+    ghcr.io/teableio/opensandbox-server:v0.2.0-fix7 \
     ghcr.io/teableio/opensandbox-ingress:v1.0.7 \
     ghcr.io/teableio/opensandbox-controller:v0.2.0 \
     ghcr.io/teableio/opensandbox-image-committer:v0.1.0 \
-    ghcr.io/teableio/opensandbox-execd:v1.0.19-fix2 \
+    ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3 \
     ghcr.io/teableio/opensandbox-egress:v1.0.12 \
     postgres:15.4 \
     redis:7.2.4 \
