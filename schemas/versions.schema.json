@@ -79,7 +79,8 @@
       "properties": {
         "docker": { "type": "string", "format": "date" },
         "kubernetes": { "type": "string", "format": "date" },
-        "backupRestore": { "type": "string", "format": "date" }
+        "backupRestore": { "type": "string", "format": "date" },
+        "sandboxChain": { "type": "string", "format": "date" }
       }
     }
   }

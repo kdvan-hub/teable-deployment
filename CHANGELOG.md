@@ -18,6 +18,10 @@ release's `versions.yaml`. Hot-swappable; no action needed.
   it. Set `system-reserved`/`kube-reserved`/`eviction-hard` in your node
   provisioner, then replace existing sandbox nodes — the reservation applies at
   node bootstrap only.
+- **`VERSIONS.md` now dates the sandbox-chain verification separately.** The
+  Docker/Kubernetes dates cover the full journey; a release that only moves the
+  sandbox engine or execd now carries its own, current date for that chain
+  instead of implying the whole journey was redone. No action needed.
 
 ## v2026.7.23 - 2026-07-28
 
