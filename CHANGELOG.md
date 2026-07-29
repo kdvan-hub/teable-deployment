@@ -9,6 +9,12 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **`VERSIONS.md`: the sandbox-chain verification reads as its own line.** It
+  rendered nested under the Kubernetes entry, which made it look like part of
+  that run rather than a separate check. No action needed.
+
 ## v2026.7.24 - 2026-07-28
 
 - **Reserve kubelet memory on dedicated sandbox nodes — action needed.**
