@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.7.24** (2026-07-28T15:26:52Z) -- do not edit
+> Generated for platform release **v2026.7.25** (2026-07-29T02:33:24Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -83,6 +83,6 @@ only in image references):
 - **Kubernetes (Helm)** (2026-07-15): bare `helm install` with
   only `global.baseDomain` set, full stack up, sandbox create/preview/delete
   loop, plus a backup/restore drill (2026-07-14).
-  - **Sandbox chain** (2026-07-28): the engine and execd pinned
-    above, driven through sandbox create/delete, in-sandbox command execution
-    and shared-volume pre-creation, with the sandbox running unprivileged.
+- **Sandbox chain** (2026-07-28): the engine and execd pinned
+  above, driven through sandbox create/delete, in-sandbox command execution
+  and shared-volume pre-creation, with the sandbox running unprivileged.
