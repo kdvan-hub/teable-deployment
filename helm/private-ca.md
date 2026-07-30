@@ -118,15 +118,20 @@ sandbox, agent included, and it is Node-only (Python and curl need their own
 switches). Acceptable for a short trial on an isolated network; do not run
 production this way -- prefer Option A.
 
-## Published apps (App Runtime) and the Infra Service
+## The Teable app, published apps (App Runtime) and the Infra Service
 
-Published apps run outside sandboxes, so the sandbox options above do not
-cover them. An App Runtime pod downloads its build artifact from the Infra
-entry over HTTPS on every start, and app code may call the Teable API at
-runtime; the Infra Service also probes each app's public URL after a deploy.
-On a private PKI all three fail: apps CrashLoop on the artifact download, and
-deployments can stick at `PublicEndpointNotReady` even though the pod is
-healthy.
+Everything outside a sandbox needs its own trust, so the sandbox options above
+do not cover it. Three call paths break on a private PKI:
+
+- **The Teable app calls the Infra API.** `TEABLE_INFRA_API_URL` is always
+  `https://<your infra host>` -- there is no in-cluster plaintext variant --
+  so the app cannot create sandboxes or deploy apps until it trusts your root.
+- **App Runtime pods download their build artifact** from the Infra entry over
+  HTTPS on every start, and app code may call the Teable API at runtime. Apps
+  CrashLoop on the artifact download.
+- **The Infra Service probes each app's public URL** after a deploy, so
+  deployments can stick at `PublicEndpointNotReady` even though the pod is
+  healthy.
 
 1. Create a ConfigMap holding your CA bundle under the `root-ca.crt` key, in
    **both** the Infra Service namespace (`infraService.namespaceOverride`,
@@ -149,10 +154,18 @@ healthy.
        configMapName: teable-root-ca
    ```
 
-3. `helm upgrade`. The infra-service restarts with the bundle trusted for all
-   of its outbound HTTPS. Already-published apps keep their old pod template:
-   **republish each running app** (or trigger a redeploy) to pick up the
-   mount -- new publishes get it automatically.
+3. `helm upgrade`. The infra-service and the Teable app both restart with the
+   bundle trusted for their outbound HTTPS (the Teable app runs in the same
+   namespace as the infra-service, so it uses the same ConfigMap -- no third
+   copy needed).
+   Already-published apps keep their old pod template: **republish each running
+   app** (or trigger a redeploy) to pick up the mount -- new publishes get it
+   automatically.
+
+   Running the Teable app outside this chart (`teable.enabled: false`)? Then it
+   is yours to wire: mount the same bundle and set
+   `NODE_EXTRA_CA_CERTS=/etc/ssl/private-ca/root-ca.crt` on that deployment, or
+   its calls to the Infra API keep failing certificate verification.
 
 Make the file a **full bundle** (public roots with your corporate root
 appended), not the single root certificate: Node's `NODE_EXTRA_CA_CERTS`
@@ -163,7 +176,8 @@ content of the Option A sandbox ConfigMap.
 
 When rotating the CA, updating the ConfigMap is not enough: the certificate
 is mounted via `subPath`, which never picks up ConfigMap changes. Restart the
-infra-service pod and republish (or redeploy) running apps after the update.
+infra-service pod and the Teable app Deployment, and republish (or redeploy)
+running apps after the update.
 
 The Docker backend of the app-deployment plane has no CA injection yet; on a
 private PKI use the Kubernetes backend for published apps.

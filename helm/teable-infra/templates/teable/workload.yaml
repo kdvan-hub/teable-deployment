@@ -1,6 +1,16 @@
 {{- /* Teable app core workload: PVC + Deployment + Service. The env contract mirrors the verified docker-compose reference deployment. */}}
 {{- if .Values.teable.enabled }}
 {{- $namespace := .Values.infraService.namespaceOverride | default .Release.Namespace }}
+{{- /* Private CA: TEABLE_INFRA_API_URL is always https://<infra host>, so on a private
+       PKI the app cannot reach the Infra API without trusting the corporate root.
+       Driven by the same infraService.privateCa switch (this pod lands in the same
+       namespace as infra-service, so it reuses that ConfigMap); the mount path and the
+       root-ca.crt key are a shared convention with helm/private-ca.md. */}}
+{{- $privateCa := .Values.infraService.privateCa | default dict }}
+{{- $privateCaConfigMap := "" }}
+{{- if $privateCa.enabled }}
+{{- $privateCaConfigMap = required "infraService.privateCa.configMapName is required when infraService.privateCa.enabled=true" $privateCa.configMapName }}
+{{- end }}
 {{- $teable := .Values.teable }}
 {{- $secretName := $teable.secret.name }}
 {{- $serviceName := printf "%s-teable" .Release.Name }}
@@ -140,6 +150,12 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.apiKeySecret.name | default "opensandbox-api-key" | quote }}
                   key: api-key
+            {{- if $privateCa.enabled }}
+            {{- /* Node reads the extra root on top of its bundled store (append semantics),
+                   so public roots keep working. */}}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/ssl/private-ca/root-ca.crt
+            {{- end }}
             {{- /* Virtual bucket served by infra-service's S3-compatible endpoint (agent workspace files), not a MinIO bucket. */}}
             - name: TEABLE_INFRA_BUCKET
               value: "teable-agent"
@@ -173,10 +189,24 @@ spec:
           volumeMounts:
             - name: assets
               mountPath: /app/.assets
+            {{- if $privateCa.enabled }}
+            - name: private-ca
+              mountPath: /etc/ssl/private-ca/root-ca.crt
+              subPath: root-ca.crt
+              readOnly: true
+            {{- end }}
       volumes:
         - name: assets
           persistentVolumeClaim:
             claimName: {{ $serviceName }}-assets
+        {{- if $privateCa.enabled }}
+        - name: private-ca
+          configMap:
+            name: {{ $privateCaConfigMap | quote }}
+            items:
+              - key: root-ca.crt
+                path: root-ca.crt
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service

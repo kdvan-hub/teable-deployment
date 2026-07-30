@@ -9,6 +9,14 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **The Teable app now trusts your private CA.** With `infraService.privateCa`
+  enabled, the CA bundle now also mounts into the Teable app pod -- sandbox
+  creation and app deploys no longer fail TLS verification on a private PKI.
+  Already using the switch? `helm upgrade` is enough (Teable deployed outside
+  this chart: see `helm/private-ca.md`).
+
 ## v2026.7.26 - 2026-07-30
 
 - **Upgrades that skip releases can now compute their pending migrations.**
