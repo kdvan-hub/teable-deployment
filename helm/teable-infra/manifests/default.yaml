@@ -1674,7 +1674,7 @@ spec:
       serviceAccountName: opensandbox-server
       containers:
       - name: main
-        image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix7
+        image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix8
         imagePullPolicy: IfNotPresent
         command:
         - "/bin/sh"
