@@ -11,6 +11,13 @@ release's `versions.yaml`. Hot-swappable; no action needed.
 
 ## Unreleased
 
+- **Docker server mode: storage API calls no longer fail with an empty `S3Error`.**
+  The entry routed `/<bucket>/...` to MinIO but not the bare `/<bucket>` path that
+  S3 clients send as `GET /<bucket>?location`, so those requests got console HTML
+  and some app endpoints returned 500; `doctor.sh` now probes the bare path too.
+  Existing installs: pull the updated Caddyfiles, then run
+  `docker compose up -d --force-recreate caddy`.
+
 ### Teable release.2026-07-30T06-45-38Z.2429
 
 #### Feature Updates

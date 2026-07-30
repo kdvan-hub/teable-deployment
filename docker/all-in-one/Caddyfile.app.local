@@ -26,7 +26,10 @@ http://infra.localhost {
 # Public-bucket paths forward to MinIO: under the minio provider the app builds public asset URLs as <PUBLIC_ORIGIN>/<public-bucket>/...,
 # so the entrypoint must hand that prefix to MinIO (path-style; bucket name is the first path segment).
 :80 {
-	handle /{$TEABLE_PUBLIC_BUCKET}/* {
+	# Bare /<bucket> (no trailing slash) must match too: S3 clients send GET /<bucket>?location,
+	# and Caddy's /x/* does not cover /x.
+	@publicBucket path /{$TEABLE_PUBLIC_BUCKET} /{$TEABLE_PUBLIC_BUCKET}/*
+	handle @publicBucket {
 		reverse_proxy minio:9000
 	}
 	handle {

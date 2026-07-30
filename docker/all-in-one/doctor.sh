@@ -205,6 +205,16 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -m 20 ${INFRA_HOSTHDR:+-H "Host: $
 [ "$code" = 200 ] && ok "/v1 split routing (with key) -> 200" || bad "/v1 split routing -> $code" "entry is not forwarding /v1 to opensandbox-server, or the key differs"
 code=$(req "$S3_HEALTH_URL")
 [ "$code" = 200 ] && ok "MinIO health -> 200" || bad "MinIO health -> $code" "minio container or s3 entry"
+# minio-js getBucketRegion sends GET /<bucket>?location -- bare bucket path, NO trailing slash. The entry
+# must still hand it to MinIO (expect S3 XML; HTML means it fell through to the console and every storage
+# call fails with an empty S3Error). Server mode only: local clients reach MinIO directly on :9000.
+if [ "$MODE" = "server" ]; then
+  body="$(curl -s -m 20 "${INFRA_URL}/${S3_BUCKET:-teable-app-artifacts}?location" | head -c 100)"
+  case "$body" in
+    '<?xml'*) ok "Bare bucket path /${S3_BUCKET:-teable-app-artifacts}?location -> S3 XML (handled by MinIO)" ;;
+    *) bad "Bare bucket path /${S3_BUCKET:-teable-app-artifacts}?location -> not S3 XML" "caddy @minio matcher must list the bare /<bucket> path next to /<bucket>/*" ;;
+  esac
+fi
 if [ "$APP_MODE" = 1 ]; then
   code=$(req "${TEABLE_URL}/health")
   [ "$code" = 200 ] && ok "Teable /health (fallback route) -> 200" || bad "Teable /health -> $code" "teable container or caddy fallback (is the app Caddyfile mounted?)"
@@ -213,6 +223,12 @@ if [ "$APP_MODE" = 1 ]; then
   case "$code" in
     200|403) ok "Public bucket path /${TEABLE_PUBLIC_BUCKET:-teable-public}/ -> $code (handled by MinIO)" ;;
     *) bad "Public bucket path -> $code" "caddy public-bucket forwarding missing (attachments/avatars will 404)" ;;
+  esac
+  # Same probe without the trailing slash: /x/* does not cover /x, so the bare path needs its own matcher entry.
+  body="$(curl -s -m 20 "${TEABLE_URL}/${TEABLE_PUBLIC_BUCKET:-teable-public}?location" | head -c 100)"
+  case "$body" in
+    '<?xml'*) ok "Bare public bucket path /${TEABLE_PUBLIC_BUCKET:-teable-public}?location -> S3 XML (handled by MinIO)" ;;
+    *) bad "Bare public bucket path /${TEABLE_PUBLIC_BUCKET:-teable-public}?location -> not S3 XML" "caddy main-site matcher must list the bare /<bucket> path next to /<bucket>/*" ;;
   esac
 fi
 

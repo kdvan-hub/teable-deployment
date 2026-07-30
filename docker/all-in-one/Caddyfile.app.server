@@ -11,7 +11,10 @@ import caddy.snippets
 # Teable main site. Public-bucket paths forward to MinIO: under the minio provider the app builds public asset URLs
 # as <PUBLIC_ORIGIN>/<public-bucket>/..., so the entrypoint must hand that prefix to MinIO (path-style).
 {$TEABLE_HOST} {
-	handle /{$TEABLE_PUBLIC_BUCKET}/* {
+	# Bare /<bucket> (no trailing slash) must match too: S3 clients send GET /<bucket>?location,
+	# and Caddy's /x/* does not cover /x.
+	@publicBucket path /{$TEABLE_PUBLIC_BUCKET} /{$TEABLE_PUBLIC_BUCKET}/*
+	handle @publicBucket {
 		reverse_proxy minio:9000
 	}
 	handle {
@@ -26,7 +29,10 @@ import caddy.snippets
 	handle /git/* {
 		reverse_proxy git-registry:8080
 	}
-	@minio path /{$S3_BUCKET}/* /{$TEABLE_PUBLIC_BUCKET}/* /{$TEABLE_PRIVATE_BUCKET}/* /minio/health/*
+	# Bare /<bucket> (no trailing slash) must match too: minio-js getBucketRegion sends GET /<bucket>?location,
+	# and Caddy's /x/* does not cover /x -- without it the request falls through to the console and the client
+	# chokes on HTML where it expects S3 XML.
+	@minio path /{$S3_BUCKET} /{$S3_BUCKET}/* /{$TEABLE_PUBLIC_BUCKET} /{$TEABLE_PUBLIC_BUCKET}/* /{$TEABLE_PRIVATE_BUCKET} /{$TEABLE_PRIVATE_BUCKET}/* /minio/health/*
 	handle @minio {
 		reverse_proxy minio:9000
 	}
