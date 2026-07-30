@@ -9,6 +9,33 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-07-30T06-45-38Z.2429
+
+#### Feature Updates
+- Added mobile-friendly controls to shared pages, making key options such as sign-in easier to access on small screens.
+- Custom emoji icons can now be removed from tables and Bases to restore the default icons.
+- Added a CLI-based permission matrix configuration workflow for exporting, editing, previewing, comparing, and applying declarative permission settings, with validation and safeguards against accidental lockouts.
+
+#### Bug Fixes & Improvements
+- Improved initial table loading performance and prevented blank rows by ensuring consistent initial record data across different loading paths.
+- Rerunning an automation workflow now keeps you in the current tab and task context.
+- Improved stability and responsiveness when clearing large numbers of cells.
+- Added consistent loading states when opening, refreshing, or switching between tables, automations, apps, dashboards, and other Base content.
+- Fixed an issue where Grid views with many visible fields remained stuck on loading placeholders after scrolling beyond the first 100 records.
+- Selecting content while Chat is expanded on desktop now restores the side panel layout without losing the conversation, draft, attachments, or scroll position. The expanded layout remains unchanged when interacting with folders.
+- Reduced initial loading delays when opening a Base from a space, while accommodating data-saving mode and extremely slow network connections.
+- Question cards and confirmation cards now appear faster with more streamlined options, handle unanswered prompts more effectively, and avoid unnecessary spacing or layout shifts.
+- Newly created AI Chat and App Builder sandboxes now always use the latest CPU, memory, and temporary disk limits configured in System Administration.
+- Fixed an issue where select values temporarily disappeared after converting a field between single select and multiple select.
+- Improved grouped Grid views so that expanding or collapsing groups updates only the affected area, preserves scroll context, and maintains accurate layouts after view changes.
+- Improved stability for Bases with many calculated fields and conditional summaries, reducing redundant calculations and resource pressure during frequent updates.
+- Fixed incorrect variable selection in automation condition nodes following scheduled triggers.
+- Improved AI Chat completion response speed and failure recovery.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-07-30T06-45-38Z.2429)
+
 ## v2026.7.27 - 2026-07-30
 
 - **The Teable app now trusts your private CA.** With `infraService.privateCa`
