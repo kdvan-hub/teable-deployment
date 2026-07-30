@@ -35,6 +35,18 @@ pids_limit = 4096                            # guards against fork bombs
 __SANDBOX_CA_BINDS__
 __SANDBOX_CA_ENV__
 
+# Pre-create pvc subPath dirs owned by the sandbox user (uid 1000 = the agent image
+# user) before container creation; without this dockerd creates missing bind sources
+# root:root and a non-root sandbox crashes with EACCES on first write. The volume and
+# its /mnt/juicefs mount into opensandbox-server are fixed in compose.yaml (same names,
+# cannot drift). Needs opensandbox-server >= v0.2.0-fix8.
+[docker.volume_subpath_precreate]
+uid = 1000
+gid = 1000
+
+[docker.volume_subpath_precreate.mounts]
+"teable-agent-juicefs" = "/mnt/juicefs"
+
 [ingress]
 mode = "direct"                              # docker mode only supports direct
 

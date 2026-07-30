@@ -16,6 +16,14 @@ release's `versions.yaml`. Hot-swappable; no action needed.
   creation and app deploys no longer fail TLS verification on a private PKI.
   Already using the switch? `helm upgrade` is enough (Teable deployed outside
   this chart: see `helm/private-ca.md`).
+- **Docker mode: a new user's first sandbox no longer crashes with a
+  permission error.** When a sandbox workspace directory did not exist yet,
+  Docker created it owned by root, and the sandbox (running as uid 1000)
+  failed on first write. The sandbox engine (`v0.2.0-fix8`) now pre-creates
+  these directories with the sandbox user's ownership. Existing Docker
+  installs: set `OPENSANDBOX_SERVER_IMAGE` to `ghcr.io/teableio/opensandbox-server:v0.2.0-fix8`
+  in your `.env`, then re-run `apply.sh`. Kubernetes installs are not
+  affected.
 
 ## v2026.7.26 - 2026-07-30
 

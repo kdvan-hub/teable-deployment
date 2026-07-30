@@ -35,6 +35,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock        # launch sandboxes on the host
       - ./opensandbox.generated.toml:/etc/opensandbox/config.toml:ro
       - opensandbox-state:/data
+      # Server-side view of the shared workspace: lets [docker.volume_subpath_precreate]
+      # create sandbox subPath dirs with the sandbox uid before dockerd would create
+      # them root:root (needs opensandbox-server >= v0.2.0-fix8).
+      - teable-agent-juicefs:/mnt/juicefs
     environment:
       SANDBOX_CONFIG_PATH: /etc/opensandbox/config.toml
       # api_key is not written into the toml; it is injected from env (overrides server.api_key). The whole stack shares one OPENSANDBOX_API_KEY.
