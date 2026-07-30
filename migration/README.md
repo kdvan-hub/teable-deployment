@@ -7,10 +7,14 @@ One guide per migration, named by the version that introduces it
 |---|---|---|
 | 2026-07 (Teable `release.2026-07-14T12-24-39Z.2228`) | [2026-07-basic-to-full-featured.md](2026-07-basic-to-full-featured.md) | Attach the self-hosted AI runtime (sandboxes + app deployments) to an existing Teable; migrate off the Vercel providers |
 
-Each platform release that requires migrations lists them in `versions.yaml`
-(`requiredMigrations[].guide` points at a file here). A release with no
-required migrations is hot-swappable: updating image versions is the whole
-upgrade.
+Each platform release that requires migrations lists them in `versions.yaml`:
+`requiredMigrations` holds what the release introduces relative to the release
+right before it (`[].guide` points at a file here), and `migrationCatalog`
+accumulates every migration the release line has ever required. A release with
+no required migrations is hot-swappable **from the release immediately before
+it**: updating image versions is the whole upgrade. When you upgrade across
+several releases, run every catalog entry newer than your current release --
+`doctor.sh --from <your-release>` computes exactly that list.
 
 ## How these guides are written
 

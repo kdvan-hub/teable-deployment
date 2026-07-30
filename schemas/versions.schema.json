@@ -67,6 +67,22 @@
         }
       }
     },
+    "migrationCatalog": {
+      "type": "array",
+      "description": "Every migration required to reach this release, oldest first. Filter by introducedIn to compute what a specific older install still needs.",
+      "items": {
+        "type": "object",
+        "required": ["id", "guide", "introducedIn"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "guide": { "type": "string" },
+          "introducedIn": { "type": "string" },
+          "irreversible": { "type": "boolean", "default": false },
+          "summary": { "type": "string" }
+        }
+      }
+    },
     "hotSwap": {
       "type": "boolean",
       "description": "True when upgrading from the previous platform release needs image updates only (no required migrations)."

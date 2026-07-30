@@ -9,6 +9,15 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Upgrades that skip releases can now compute their pending migrations.**
+  `versions.yaml` gains `migrationCatalog` -- every migration this release
+  line has ever required, with the release that introduced it -- rendered as
+  "Upgrading across releases" in `VERSIONS.md`; `doctor.sh --from
+  <your-release>` (Docker and Helm) prints what your install still has to
+  run. No action needed.
+
 ## v2026.7.25 - 2026-07-29
 
 - **`VERSIONS.md`: the sandbox-chain verification reads as its own line.** It

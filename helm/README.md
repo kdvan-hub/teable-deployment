@@ -182,6 +182,7 @@ mode above when those restrictions apply too.
 
 ```bash
 ./helm/doctor.sh [release] [namespace]     # defaults: teable opensandbox-system
+./helm/doctor.sh --from vYYYY.M.N          # + migrations pending since that release
 ```
 
 Checks that every workload is ready, certificates are issued, and that the
@@ -189,7 +190,10 @@ images running in the cluster still match what the Helm release installed —
 with the exact commands to reconcile if they drifted. It also compares what is
 running against the platform release manifest (`versions.yaml`) and reports one
 of three states: compatible, upgrade the Teable app, or an unknown (unverified)
-component combination.
+component combination. Upgrading from an older platform release, pass
+`--from <the release you run today>`: it reads `migrationCatalog` from
+`versions.yaml` and prints the migrations your install still has to run, in
+order (see also "Upgrading across releases" in `VERSIONS.md`).
 
 ## Hardening sandboxes
 

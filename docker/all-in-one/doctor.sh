@@ -2,6 +2,9 @@
 # Teable all-in-one self-check (doctor): post-deploy acceptance + first-layer fault triage.
 #   ./doctor.sh                Full check (includes sandbox create/destroy; first image pull may be slow)
 #   ./doctor.sh --no-sandbox   Skip sandbox creation (fast mode)
+#   ./doctor.sh --from vYYYY.M.N   Additionally list the migrations still pending
+#                                  between platform release vYYYY.M.N and this
+#                                  checkout's release
 # Each check maps to a real failure mode; every FAIL hint names the first layer to inspect.
 # Containers being healthy alone does NOT count as passing -- routing, contract env, the three storage planes, and the sandbox chain must all be genuinely verified.
 set -uo pipefail
@@ -9,8 +12,104 @@ cd "$(dirname "$0")"
 # Assets (compose files, .env) live alongside this script; the cd-guard below also supports running it from a parent directory.
 [ -f .env ] || [ -f compose.yaml ] || { [ -d ../docker/all-in-one ] && cd ../docker/all-in-one; }
 
+# --- BEGIN shared doctor block: calver + migration catalog helpers ---
+# Keep this block byte-identical between docker/all-in-one/doctor.sh and
+# helm/doctor.sh (the repository test suite asserts it).
+
+# True when $1 looks like a platform release id (calver: v<year>.<month>.<seq>).
+calver_valid() {
+  printf '%s\n' "$1" | grep -Eq '^v[0-9]{4}\.[0-9]{1,2}\.[0-9]+$'
+}
+
+# True when release $1 is strictly newer than release $2. Segments compare
+# numerically: string order would sort v2026.7.9 after v2026.7.10.
+calver_newer() {
+  awk -v a="${1#v}" -v b="${2#v}" 'BEGIN {
+    split(a, x, "."); split(b, y, ".")
+    for (i = 1; i <= 3; i++) {
+      d = (x[i] + 0) - (y[i] + 0)
+      if (d != 0) exit (d > 0 ? 0 : 1)
+    }
+    exit 1
+  }'
+}
+
+# From the manifest at $1, print the migrationCatalog entries introduced after
+# release $2 -- "<introducedIn>|<id>|<irreversible>|<guide>" per line, oldest
+# first (the manifest is generated in that order).
+pending_migrations() {
+  awk '
+    function flushrow() { if (id != "") print ver "|" id "|" irr "|" guide; id = "" }
+    /^migrationCatalog:/ { inc = 1; next }
+    /^[A-Za-z]/          { if (inc) flushrow(); inc = 0 }
+    !inc                 { next }
+    /^- id: /            { flushrow(); id = $3; ver = ""; irr = "false"; guide = "" }
+    /^  guide: /         { guide = $2 }
+    /^  introducedIn: /  { ver = $2 }
+    /^  irreversible: /  { irr = $2 }
+    END                  { flushrow() }
+  ' "$1" | while IFS='|' read -r ver id irr guide; do
+    [ -n "$ver" ] || continue
+    if calver_newer "$ver" "$2"; then
+      printf '%s|%s|%s|%s\n' "$ver" "$id" "$irr" "$guide"
+    fi
+  done
+}
+
+# Report what an install still on release $2 must run before upgrading to the
+# release described by the manifest at $1.
+report_pending_migrations() {
+  vf="$1"; from="$2"
+  if [ ! -f "$vf" ]; then
+    printf '[!] cannot compute pending migrations: %s not found\n' "$vf"
+    return 0
+  fi
+  target="$(awk '/^platformRelease: /{print $2; exit}' "$vf")"
+  if ! grep -q '^migrationCatalog:' "$vf"; then
+    printf '[!] %s carries no migrationCatalog (predates it); use a checkout of a\n' "$vf"
+    printf '    newer platform release to compute pending migrations\n'
+    return 0
+  fi
+  if [ -n "$target" ] && calver_newer "$from" "$target"; then
+    printf '[!] --from %s is newer than the release this checkout ships (%s);\n' "$from" "$target"
+    printf '    an empty result would be meaningless -- check the value, or run this\n'
+    printf '    from a checkout at or above your installed release\n'
+    return 0
+  fi
+  pending="$(pending_migrations "$vf" "$from")"
+  printf 'Upgrading %s -> %s:\n' "$from" "${target:-this release}"
+  if [ -z "$pending" ]; then
+    printf '  no pending migrations -- updated images are the whole upgrade (see VERSIONS.md)\n'
+  else
+    printf '  pending migrations, run oldest first (details: VERSIONS.md and each guide):\n'
+    printf '%s\n' "$pending" | while IFS='|' read -r ver id irr guide; do
+      note=""
+      [ "$irr" = "true" ] && note=" (irreversible -- back up first)"
+      printf '  - %s introduced in %s%s\n      guide: %s\n' "$id" "$ver" "$note" "$guide"
+    done
+  fi
+}
+# --- END shared doctor block ---
+
 NO_SANDBOX=0
-[ "${1:-}" = "--no-sandbox" ] && NO_SANDBOX=1
+FROM=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --no-sandbox) NO_SANDBOX=1; shift ;;
+    --from)   [ -n "${2:-}" ] || { printf '[FAIL] --from needs a platform release (e.g. --from v2026.7.0)\n'; exit 2; }
+              FROM="$2"; shift 2 ;;
+    --from=*) FROM="${1#--from=}"; shift ;;
+    *)        printf 'Unknown argument: %s (usage: ./doctor.sh [--no-sandbox] [--from vYYYY.M.N])\n' "$1"; exit 2 ;;
+  esac
+done
+
+if [ -n "$FROM" ]; then
+  calver_valid "$FROM" || { printf '[FAIL] --from expects a platform release like v2026.7.0, got: %s\n' "$FROM"; exit 2; }
+  VERSIONS_CAND="../../versions.yaml"
+  [ -f "$VERSIONS_CAND" ] || { [ -f ../delivery/public/versions.yaml ] && VERSIONS_CAND="../delivery/public/versions.yaml"; }
+  report_pending_migrations "$VERSIONS_CAND" "$FROM"
+  printf '\n'
+fi
 
 PASS=0; FAIL=0; SKIP=0
 ok()   { PASS=$((PASS+1)); printf '  [ok]   %s\n' "$1"; }

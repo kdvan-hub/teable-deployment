@@ -91,7 +91,8 @@ Dockerfile.caddy                 server only: Caddy with the Cloudflare DNS plug
 opensandbox.toml                 sandbox engine config template (rendered by apply.sh, no secrets)
 apply.sh + apply.d/              configuration entry point (behaviors split by file, in order)
 lib.sh                           shared functions
-doctor.sh                        post-deploy self-check (incl. platform release compatibility)
+doctor.sh                        post-deploy self-check (incl. platform release compatibility;
+                                 --from vYYYY.M.N lists the migrations pending since that release)
 pin-image.sh                     pin image versions
 prepull.sh                       pre-pull sandbox execution-plane images (optional)
 .env.local.example / .server.example

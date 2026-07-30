@@ -2,14 +2,15 @@
 # Post-install check for a teable-infra Helm install.
 #
 #   ./doctor.sh [RELEASE] [NAMESPACE]     defaults: teable opensandbox-system
+#   ./doctor.sh --from vYYYY.M.N          additionally list the migrations still
+#                                         pending between platform release
+#                                         vYYYY.M.N and this checkout's release
 #
 # Checks that the stack is healthy and that the images running in the cluster
 # still match what the Helm release installed (drift happens when images are
 # swapped by hand with kubectl set image).
 set -euo pipefail
 
-RELEASE="${1:-teable}"
-NAMESPACE="${2:-opensandbox-system}"
 fail=0
 drift=0
 
@@ -17,6 +18,111 @@ say() { printf '%s\n' "$*"; }
 ok() { say "[ok] $*"; }
 warn() { say "[!] $*"; }
 bad() { say "[x] $*"; fail=1; }
+
+# --- BEGIN shared doctor block: calver + migration catalog helpers ---
+# Keep this block byte-identical between docker/all-in-one/doctor.sh and
+# helm/doctor.sh (the repository test suite asserts it).
+
+# True when $1 looks like a platform release id (calver: v<year>.<month>.<seq>).
+calver_valid() {
+  printf '%s\n' "$1" | grep -Eq '^v[0-9]{4}\.[0-9]{1,2}\.[0-9]+$'
+}
+
+# True when release $1 is strictly newer than release $2. Segments compare
+# numerically: string order would sort v2026.7.9 after v2026.7.10.
+calver_newer() {
+  awk -v a="${1#v}" -v b="${2#v}" 'BEGIN {
+    split(a, x, "."); split(b, y, ".")
+    for (i = 1; i <= 3; i++) {
+      d = (x[i] + 0) - (y[i] + 0)
+      if (d != 0) exit (d > 0 ? 0 : 1)
+    }
+    exit 1
+  }'
+}
+
+# From the manifest at $1, print the migrationCatalog entries introduced after
+# release $2 -- "<introducedIn>|<id>|<irreversible>|<guide>" per line, oldest
+# first (the manifest is generated in that order).
+pending_migrations() {
+  awk '
+    function flushrow() { if (id != "") print ver "|" id "|" irr "|" guide; id = "" }
+    /^migrationCatalog:/ { inc = 1; next }
+    /^[A-Za-z]/          { if (inc) flushrow(); inc = 0 }
+    !inc                 { next }
+    /^- id: /            { flushrow(); id = $3; ver = ""; irr = "false"; guide = "" }
+    /^  guide: /         { guide = $2 }
+    /^  introducedIn: /  { ver = $2 }
+    /^  irreversible: /  { irr = $2 }
+    END                  { flushrow() }
+  ' "$1" | while IFS='|' read -r ver id irr guide; do
+    [ -n "$ver" ] || continue
+    if calver_newer "$ver" "$2"; then
+      printf '%s|%s|%s|%s\n' "$ver" "$id" "$irr" "$guide"
+    fi
+  done
+}
+
+# Report what an install still on release $2 must run before upgrading to the
+# release described by the manifest at $1.
+report_pending_migrations() {
+  vf="$1"; from="$2"
+  if [ ! -f "$vf" ]; then
+    printf '[!] cannot compute pending migrations: %s not found\n' "$vf"
+    return 0
+  fi
+  target="$(awk '/^platformRelease: /{print $2; exit}' "$vf")"
+  if ! grep -q '^migrationCatalog:' "$vf"; then
+    printf '[!] %s carries no migrationCatalog (predates it); use a checkout of a\n' "$vf"
+    printf '    newer platform release to compute pending migrations\n'
+    return 0
+  fi
+  if [ -n "$target" ] && calver_newer "$from" "$target"; then
+    printf '[!] --from %s is newer than the release this checkout ships (%s);\n' "$from" "$target"
+    printf '    an empty result would be meaningless -- check the value, or run this\n'
+    printf '    from a checkout at or above your installed release\n'
+    return 0
+  fi
+  pending="$(pending_migrations "$vf" "$from")"
+  printf 'Upgrading %s -> %s:\n' "$from" "${target:-this release}"
+  if [ -z "$pending" ]; then
+    printf '  no pending migrations -- updated images are the whole upgrade (see VERSIONS.md)\n'
+  else
+    printf '  pending migrations, run oldest first (details: VERSIONS.md and each guide):\n'
+    printf '%s\n' "$pending" | while IFS='|' read -r ver id irr guide; do
+      note=""
+      [ "$irr" = "true" ] && note=" (irreversible -- back up first)"
+      printf '  - %s introduced in %s%s\n      guide: %s\n' "$id" "$ver" "$note" "$guide"
+    done
+  fi
+}
+# --- END shared doctor block ---
+
+RELEASE="teable"
+NAMESPACE="opensandbox-system"
+FROM=""
+narg=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --from)   [ -n "${2:-}" ] || { say "[x] --from needs a platform release (e.g. --from v2026.7.0)"; exit 2; }
+              FROM="$2"; shift 2 ;;
+    --from=*) FROM="${1#--from=}"; shift ;;
+    -*)       say "[x] unknown flag: $1"; exit 2 ;;
+    *)        narg=$((narg+1))
+              case "${narg}" in
+                1) RELEASE="$1" ;;
+                2) NAMESPACE="$1" ;;
+                *) say "[x] too many arguments: $1"; exit 2 ;;
+              esac
+              shift ;;
+  esac
+done
+
+if [ -n "${FROM}" ]; then
+  calver_valid "${FROM}" || { say "[x] --from expects a platform release like v2026.7.0, got: ${FROM}"; exit 2; }
+  report_pending_migrations "$(cd "$(dirname "$0")" && pwd)/../versions.yaml" "${FROM}"
+  say ""
+fi
 
 command -v kubectl >/dev/null || { bad "kubectl not found"; exit 1; }
 command -v helm >/dev/null || { bad "helm not found"; exit 1; }
