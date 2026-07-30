@@ -1,6 +1,6 @@
 # Images
 
-> Generated for platform release **v2026.7.26** -- do not edit by hand.
+> Generated for platform release **v2026.7.27** -- do not edit by hand.
 > The authoritative pin list (with digests) is [`../versions.yaml`](../versions.yaml).
 
 All first-party images are published multi-arch (amd64 + arm64) and
