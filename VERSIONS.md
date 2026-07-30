@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.7.27** (2026-07-30T07:20:30Z) -- do not edit
+> Generated for platform release **v2026.7.28** (2026-07-30T10:09:22Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -12,11 +12,11 @@ across releases. What changed between releases: [`CHANGELOG.md`](CHANGELOG.md).
 
 | Component | Image | Architectures | Notes |
 |---|---|---|---|
-| `teable` | `ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393` | amd64, arm64 | Stable channel (:latest) resolved to its release tag at generation time |
+| `teable` | `ghcr.io/teableio/teable:release.2026-07-30T06-45-38Z.2429` | amd64, arm64 | Stable channel (:latest) resolved to its release tag at generation time |
 | `teable-sandbox-agent` | `ghcr.io/teableio/teable-sandbox-agent` | - | Prefix only, no tag: at runtime the app pulls `<prefix>:<its own release tag>`, so sandbox hosts need registry access |
 | `teable-app-runtime` | `ghcr.io/teableio/teable-app-runtime:20260717T042653Z` | amd64, arm64 |  |
 | `teable-infra-service` | `ghcr.io/teableio/teable-infra-service:20260727T140626Z` | amd64, arm64 |  |
-| `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix7` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6), and the container-level securityContext backfill plus shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7) |
+| `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix8` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6), the container-level securityContext backfill plus shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7), and docker-runtime workspace-directory ownership pre-creation (>= fix8) |
 | `opensandbox-ingress` | `ghcr.io/teableio/opensandbox-ingress:v1.0.7` | amd64, arm64 |  |
 | `opensandbox-controller` | `ghcr.io/teableio/opensandbox-controller:v0.2.0` | amd64, arm64 |  |
 | `opensandbox-image-committer` | `ghcr.io/teableio/opensandbox-image-committer:v0.1.0` | amd64, arm64 | Also runs the node image-preheater DaemonSet. |
@@ -57,7 +57,7 @@ first-party image is mirrored there with identical tags. Details and offline
 | | Release tag |
 |---|---|
 | Minimum supported | `release.2026-07-14T12-24-39Z.2228` |
-| Verified against | `release.2026-07-27T10-51-13Z.2393` |
+| Verified against | `release.2026-07-30T06-45-38Z.2429` |
 
 Older app releases cannot use this runtime's path-proxy sandbox mode; upgrade
 the app first (its data is untouched by app image upgrades).
@@ -91,6 +91,3 @@ No migration has ever been required on this release line: upgrading from
 - **Kubernetes (Helm)** (2026-07-15): bare `helm install` with
   only `global.baseDomain` set, full stack up, sandbox create/preview/delete
   loop, plus a backup/restore drill (2026-07-14).
-- **Sandbox chain** (2026-07-28): the engine and execd pinned
-  above, driven through sandbox create/delete, in-sandbox command execution
-  and shared-volume pre-creation, with the sandbox running unprivileged.

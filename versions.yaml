@@ -5,12 +5,12 @@
 # China deployments: every ghcr.io/teableio/ image is mirrored with identical
 # tags at registry.cn-shenzhen.aliyuncs.com/teable/ (digests differ per registry; the
 # digests below are for the canonical registry shown in each reference).
-platformRelease: v2026.7.27
-releasedAt: '2026-07-30T07:20:30Z'
+platformRelease: v2026.7.28
+releasedAt: '2026-07-30T10:09:22Z'
 components:
   teable:
-    image: ghcr.io/teableio/teable:release.2026-07-27T10-51-13Z.2393
-    digest: sha256:3f9018f6387bab77d687846e65779f898502541291e86b8f9caf25d9a79b2d39
+    image: ghcr.io/teableio/teable:release.2026-07-30T06-45-38Z.2429
+    digest: sha256:5c4d8c9db3dfbd40d93a89804964e833839c60ec4e5ffbbff85492f8595c697e
     architectures:
     - amd64
     - arm64
@@ -34,16 +34,17 @@ components:
     - amd64
     - arm64
   opensandbox-server:
-    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix7
-    digest: sha256:b9ece1732db4733e0be98df9ff7fe9d2fc105c5dad02da083e2c1e31fb76ce06
+    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix8
+    digest: sha256:56647098d676b2e1186bf32ffe7dd501eb87269d0402885b1aa04c61907d55b3
     architectures:
     - amd64
     - arm64
     note: 'Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints
       (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for
-      private-CA trust (>= fix6), and the container-level securityContext backfill
-      plus shared-volume subPath pre-creation that unprivileged sandboxes need (>=
-      fix7); upstream does not include them yet.'
+      private-CA trust (>= fix6), the container-level securityContext backfill plus
+      shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7),
+      and docker-runtime workspace-directory ownership pre-creation (>= fix8); upstream
+      does not include them yet.'
   opensandbox-ingress:
     image: ghcr.io/teableio/opensandbox-ingress:v1.0.7
     digest: sha256:f67bef778e4c80c7de182f76a213363ba2c5214c323823b364cda859dbd36198
@@ -110,7 +111,7 @@ components:
     note: Bucket-provisioning sidecar for MinIO; pinned alongside it.
 teableCompatibility:
   minRelease: release.2026-07-14T12-24-39Z.2228
-  verifiedRelease: release.2026-07-27T10-51-13Z.2393
+  verifiedRelease: release.2026-07-30T06-45-38Z.2429
 requiredMigrations: []
 migrationCatalog: []
 hotSwap: true
@@ -118,4 +119,3 @@ verified:
   docker: '2026-07-15'
   kubernetes: '2026-07-15'
   backupRestore: '2026-07-14'
-  sandboxChain: '2026-07-28'
