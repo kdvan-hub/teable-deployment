@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.7.26 - 2026-07-30
 
 - **Upgrades that skip releases can now compute their pending migrations.**
   `versions.yaml` gains `migrationCatalog` -- every migration this release

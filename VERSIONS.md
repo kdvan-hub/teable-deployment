@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.7.25** (2026-07-29T02:33:24Z) -- do not edit
+> Generated for platform release **v2026.7.26** (2026-07-30T06:28:21Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -64,16 +64,24 @@ the app first (its data is untouched by app image upgrades).
 
 ## Upgrading to this release
 
-This release is **hot-swappable** from the previous platform release -- no
-data migration required. Upgrade from this repository **checked out at the
-release tag** (sidecar pins are embedded in the compose/chart sources, not
-only in image references):
+This release is **hot-swappable from the platform release immediately
+before it**: coming from that release, updated images are the whole
+upgrade -- no data migration required. Coming from an older release, first
+check [Upgrading across releases](#upgrading-across-releases) below.
+Upgrade from this repository **checked out at the release tag** (sidecar
+pins are embedded in the compose/chart sources, not only in image
+references):
 
 - **Docker**: re-run `./apply.sh <mode> [--with-app]` (it re-renders the
   engine config, whose sandbox sidecar pins change between releases), then
   `docker compose pull && docker compose up -d`.
 - **Kubernetes**: `helm upgrade` with the chart from this checkout, applying
   `helm/examples/images.values.yaml` (see its header).
+
+### Upgrading across releases
+
+No migration has ever been required on this release line: upgrading from
+**any** older platform release follows the same image-swap steps as above.
 
 ## What "verified" means
 
