@@ -350,6 +350,21 @@ spec:
             - name: OAUTH_ALLOWED_EMAIL_DOMAINS
               value: {{ join "," ($oauth.allowedEmailDomains | default list) | quote }}
             {{- end }}
+            {{- with .Values.infraService.githubTokenBroker }}
+            {{- if .secretName }}
+            # The env-manager server presents this key to fetch "the logged-in user's
+            # GitHub token" so commits are authored as that person. Deliberately NOT the
+            # shared infra API key: that key backs many automations, while this capability
+            # should belong to exactly one caller. Unset = /api/internal/github-token
+            # answers 404 (feature off by default).
+            - name: GITHUB_TOKEN_BROKER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName | quote }}
+                  key: {{ .secretKey | default "broker-key" | quote }}
+                  optional: true
+            {{- end }}
+            {{- end }}
             {{- if eq $authProvider "github" }}
             - name: GITHUB_CLIENT_ID
               value: {{ .Values.infraService.github.clientId | quote }}

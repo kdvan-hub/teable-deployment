@@ -435,6 +435,14 @@ gitRegistry:
 infraService:
   # default-on: control-plane console/API for sandboxes, files and app deployments
   enabled: true
+  # Key required by the internal endpoint that hands "the logged-in user's GitHub
+  # token" to the env-manager server. Empty secretName = the endpoint answers 404
+  # (feature off by default). Read the design notes before enabling: this changes
+  # infra-service from "stateless signature verification" into "a service holding
+  # live credentials" — a change in kind, not degree.
+  githubTokenBroker:
+    secretName: ""
+    secretKey: broker-key
   # RBAC group toggle: set false when RBAC is managed cluster-wide (you must provide an SA matching serviceAccountName with equivalent permissions).
   rbac:
     create: true
