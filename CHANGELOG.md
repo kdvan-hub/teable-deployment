@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.0 - 2026-08-01
 
 - **The sandbox engine can run under a chosen identity.** New
   `opensandbox-server.server.podSecurityContext` / `securityContext` /
