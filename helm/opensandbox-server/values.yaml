@@ -60,6 +60,21 @@ server:
   volumeMounts: []
   volumes: []
 
+  # Pod- and container-level securityContext for the server. Empty by default
+  # (the image runs as root). Set these when the control plane must run under a
+  # specific identity -- for example so that the subPath pre-creation feature
+  # writes directories as that identity and never needs a chown at all:
+  #   podSecurityContext: {runAsUser: 1001, runAsGroup: 1001, runAsNonRoot: true}
+  # Running as non-root REQUIRES moving the listener off the privileged port:
+  # set containerPort below AND the matching `[server] port` in configToml.
+  podSecurityContext: {}
+  securityContext: {}
+
+  # Port the server listens on inside the container. Must equal `[server] port`
+  # in configToml. Keep 80 for root deployments; use e.g. 8080 for non-root,
+  # since binding a port below 1024 needs CAP_NET_BIND_SERVICE.
+  containerPort: 80
+
   # Optional BatchSandbox pod template override. When set, it is mounted at
   # /etc/opensandbox/batchsandbox-template.yaml and can be referenced by configToml.
   # Scheduling switches (bin-packing affinity, request envs, default memory

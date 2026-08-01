@@ -9,6 +9,15 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **The sandbox engine can run under a chosen identity.** New
+  `opensandbox-server.server.podSecurityContext` / `securityContext` /
+  `containerPort` values. Useful when a shared sandbox volume is owned by a
+  uid other than the default: run the engine as that uid and its subPath
+  pre-creation writes directories directly, with no chown. Non-root also needs
+  `containerPort` (and `[server] port` in `configToml`) moved off port 80.
+
 ## v2026.7.28 - 2026-07-30
 
 - **Docker server mode: storage API calls no longer fail with an empty `S3Error`.**
