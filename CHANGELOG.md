@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.1 - 2026-08-02
 
 - **Optional operator app switcher in the Infra Service sidebar.** New value
   `infraService.internalAppSwitcher` (default `false`) shows a grid button
