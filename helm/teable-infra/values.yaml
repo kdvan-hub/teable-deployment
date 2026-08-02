@@ -476,9 +476,11 @@ infraService:
     create: true
   # Set to .example.com to issue the session cookie for all subdomains; subdomain control planes reuse the login via the shared SESSION_SECRET.
   sessionCookieDomain: ""
-  # Shows an operator app-switcher (grid button linking to companion control planes) in the sidebar.
-  # Off by default; intended for multi-control-plane operator setups. No UI change when false.
-  internalAppSwitcher: false
+  # Operator app switcher (grid button in the sidebar) linking to companion control
+  # planes of YOUR deployment. Empty (default) hides the switcher entirely — no UI change.
+  # Each entry: {name, desc, url}; set current: true on the entry that is this Infra
+  # Service so it renders unlinked. Replaces the v2026.8.1 boolean `internalAppSwitcher`.
+  internalAppSwitcherApps: []
   github:
     clientId: ""
     clientSecretName: infra-service-github-oauth

@@ -325,9 +325,9 @@ spec:
             - name: SESSION_COOKIE_DOMAIN
               value: {{ .Values.infraService.sessionCookieDomain | quote }}
             {{- end }}
-            {{- if .Values.infraService.internalAppSwitcher }}
-            - name: INFRA_INTERNAL_APP_SWITCHER
-              value: "1"
+            {{- if .Values.infraService.internalAppSwitcherApps }}
+            - name: INFRA_INTERNAL_APP_SWITCHER_APPS
+              value: {{ toJson .Values.infraService.internalAppSwitcherApps | quote }}
             {{- end }}
             - name: AUTH_PROVIDER
               value: {{ $authProvider | quote }}

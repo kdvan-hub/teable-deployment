@@ -9,6 +9,15 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **App switcher targets are now configurable.** The v2026.8.1 boolean
+  `infraService.internalAppSwitcher` is replaced by
+  `infraService.internalAppSwitcherApps` — a list of `{name, desc, url,
+  current}` entries pointing at your own companion control planes. Empty
+  (default) hides the switcher. If you had enabled the boolean, move your
+  targets into the list; otherwise no action needed.
+
 ## v2026.8.1 - 2026-08-02
 
 - **Optional operator app switcher in the Infra Service sidebar.** New value
