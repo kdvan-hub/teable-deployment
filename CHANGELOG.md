@@ -9,6 +9,13 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Optional operator app switcher in the Infra Service sidebar.** New value
+  `infraService.internalAppSwitcher` (default `false`) shows a grid button
+  linking to companion control planes, for operators running several of them.
+  When left off the UI is unchanged. No action needed.
+
 ## v2026.8.0 - 2026-08-01
 
 - **The sandbox engine can run under a chosen identity.** New
