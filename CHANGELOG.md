@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.3 - 2026-08-03
 
 - **Infra Service now always watches the sandbox and app-deploy namespaces.**
   The `K8S_NAMESPACES` list automatically includes `sandboxNamespace.name` and
