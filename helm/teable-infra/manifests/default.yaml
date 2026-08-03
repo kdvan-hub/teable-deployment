@@ -1877,7 +1877,7 @@ spec:
         - name: GKE_CLUSTER_NAME
           value: ''
         - name: K8S_NAMESPACES
-          value: opensandbox-system,opensandbox
+          value: opensandbox-system,opensandbox,teable-sandbox,app-deploy
         - name: HISTORY_SAMPLE_SECONDS
           value: '5'
         - name: HISTORY_WINDOW_SECONDS

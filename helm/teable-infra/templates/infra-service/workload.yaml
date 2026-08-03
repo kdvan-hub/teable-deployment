@@ -66,8 +66,22 @@ spec:
               value: {{ get $global "gkeLocation" | default "" | quote }}
             - name: GKE_CLUSTER_NAME
               value: {{ get $global "gkeClusterName" | default "" | quote }}
+            {{- /* infra-service must always see the sandbox dataplane and the
+                   app-deployment plane; union them in here instead of trusting
+                   infraService.namespaces to be kept in sync by hand
+                   (teable-deployment#1: default values drifted apart). */}}
+            {{- $watchNs := .Values.infraService.namespaces | default list }}
+            {{- $planeNs := list .Values.sandboxNamespace.name }}
+            {{- if .Values.appRuntime.enabled }}
+            {{- $planeNs = append $planeNs .Values.appRuntime.namespace }}
+            {{- end }}
+            {{- range $planeNs }}
+            {{- if and . (not (has . $watchNs)) }}
+            {{- $watchNs = append $watchNs . }}
+            {{- end }}
+            {{- end }}
             - name: K8S_NAMESPACES
-              value: {{ join "," .Values.infraService.namespaces | quote }}
+              value: {{ join "," $watchNs | quote }}
             - name: HISTORY_SAMPLE_SECONDS
               value: {{ .Values.infraService.historySampleSeconds | default 5 | quote }}
             - name: HISTORY_WINDOW_SECONDS

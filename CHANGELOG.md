@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Infra Service now always watches the sandbox and app-deploy namespaces.**
+  The `K8S_NAMESPACES` list automatically includes `sandboxNamespace.name` and
+  (when app deployment is enabled) `appRuntime.namespace`, fixing default
+  installs where active sandboxes in `teable-sandbox` were invisible to the
+  Infra Service ([teable-deployment#1](https://github.com/teableio/teable-deployment/issues/1)).
+  If you had manually added these to `infraService.namespaces`, you can remove
+  them; otherwise no action needed.
+
 ## v2026.8.2 - 2026-08-02
 
 - **App switcher targets are now configurable.** The v2026.8.1 boolean

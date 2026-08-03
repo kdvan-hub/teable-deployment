@@ -501,6 +501,9 @@ infraService:
   replicaCount: 1
   serviceAccountName: infra-service
   serviceAccountAnnotations: {}
+  # Extra namespaces infra-service watches, beyond the ones the template always
+  # appends by itself: sandboxNamespace.name and (when appRuntime.enabled)
+  # appRuntime.namespace. Only list namespaces not already covered by those two.
   namespaces:
     - opensandbox-system
     - opensandbox
