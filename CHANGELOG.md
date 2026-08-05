@@ -9,6 +9,13 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Sandbox engine `v0.2.0-fix9` accepts setgid `dir_mode`.** Values above
+  `0o777` (e.g. `0o2775`) in `[kubernetes.volume_subpath_precreate]` no longer
+  fail server startup validation; pairs with the new Helm README recipe for
+  sandbox volumes owned by a different identity than the sandbox user.
+
 ## v2026.8.3 - 2026-08-03
 
 - **Infra Service now always watches the sandbox and app-deploy namespaces.**

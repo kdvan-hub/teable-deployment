@@ -269,6 +269,60 @@ the right owner before starting the sandbox; read-only mounts are skipped. Get
 the claim name wrong and pre-creation is silently skipped -- verify with a fresh
 user's first sandbox, not an existing one.
 
+#### Storage owned by a different identity
+
+Some storage platforms mandate their own owner uid on shared volumes and
+disallow `chown`, while the sandbox identity is fixed at 1000. Do not try to
+align the two uids -- either direction breaks: a sandbox uid other than 1000
+fails every command (the execd credential match), and re-owning platform
+storage violates its policy. Bridge them with a group instead. With `1001` as
+the storage-owner identity, run the server *as that identity* and have it
+create directories group-writable:
+
+```yaml
+opensandbox-server:
+  server:
+    podSecurityContext: {runAsUser: 1001, runAsGroup: 1001, runAsNonRoot: true}
+    containerPort: 8080     # non-root cannot bind 80; mirror it in `[server] port`
+    volumes:                # the same PVC mount as above -- pre-creation needs it
+      - name: agent-data
+        persistentVolumeClaim:
+          claimName: <your sandbox PVC>
+    volumeMounts:
+      - name: agent-data
+        mountPath: /mnt/agent-data
+  configToml: |
+    [server]
+    port = 8080
+    ...                     # keep the rest of your config
+
+    # The metadata store defaults to a path under HOME, and a non-root uid
+    # has no writable HOME on the stock image -- without this the server
+    # exits at startup before serving anything.
+    [store]
+    path = "/tmp/opensandbox/opensandbox.db"
+
+    [kubernetes.volume_subpath_precreate]
+    uid = 1001              # the storage owner, not the sandbox uid
+    gid = 1001
+    dir_mode = 0o2775       # group-write + setgid; needs server >= v0.2.0-fix9
+
+    [kubernetes.volume_subpath_precreate.mounts]
+    "<your sandbox PVC>" = "/mnt/agent-data"
+```
+
+then give sandboxes that group: add `supplementalGroups: [1001]` to the
+**pod-level** securityContext of your `batchSandboxTemplate` (the `nonRoot`
+switch preserves it; container-level securityContext has no such field).
+
+Directories come out `1001:1001 drwxrwsr-x`: the server, already being the
+owner, never calls chown, and sandboxes (uid 1000) write through the
+supplementary group. On engines older than fix9 use `dir_mode = 0o775` --
+same write bridge, minus setgid group inheritance on new content. Pre-creation
+sets mode only on directories it creates, so directories that already exist
+with the wrong mode or owner must be fixed once by hand (or removed and left
+for the server to recreate).
+
 ## Private CA / self-signed certificates
 
 If your Teable hosts serve certificates from a private/corporate CA, sandboxes
