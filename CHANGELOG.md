@@ -9,6 +9,61 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-05T11-23-43Z.2499
+
+#### Feature Updates
+
+- Added targeted in-app announcements that admins can schedule, localize, withdraw, and display as banners, toasts, modals, or sidebar cards.
+- Added read-only record snapshots to the recycle bin, with filters for resource type, operator, deletion time, creator, and creation time.
+- Added Business-tier record archiving with browsing, restore, permanent deletion, CSV export, and longer-term retention.
+- Published apps now have a more visible quick-open link, clearer unpublished-change indicators, and improved version history and rollback behavior.
+- Added an admin maintenance check for finding and repairing users without avatars, with bulk repair and progress feedback.
+- Enabled WebSocket compression for realtime grid loads and record updates, reducing bandwidth usage and improving responsiveness on slower networks.
+- Removed outdated in-app pricing and FAQ content in favor of the current official pricing page.
+
+#### Bug Fixes & Improvements
+
+- Fixed table view filter errors, including failures when deleting the last filter, clearing filters, or opening views with incomplete date filter settings.
+- Filter additions and changes now appear immediately in toolbar summaries and synchronize more reliably across connected clients.
+- Stopping an AI generation is now handled as a graceful interruption across chat, app builder, and agent flows without showing server errors in other open windows.
+- Improved generation checkpoint reliability under heavy database load.
+- Improved computed-field processing for large and highly connected tables by splitting recalculation work into smaller stages, reducing stalled writes, memory pressure, and 503 errors.
+- Fixed computed-field dependency and propagation issues affecting conditional comparisons, linked records, lookups, rollups, circular dependencies, and partial recalculation batches.
+- Improved lookup propagation latency for bounded single-record updates.
+- Fixed conditional rollup analysis that could trigger excessive recomputation on complex dependency graphs.
+- Fixed schema updates that could become stuck when changing field types on tables with computed fields.
+- Standardized database time handling around UTC to prevent timestamp drift in scheduled tasks, metadata updates, and other database-driven workflows on non-UTC deployments.
+- Fixed AI creation workflows that could place generated nodes at the top level instead of alongside the source node, and exposed the folder option for create commands.
+- Share controls and operations now consistently respect user and access-token permissions, with unavailable options disabled and explained in share dialogs.
+- Improved audit log reliability during bulk operations and shutdowns, preserved original event times, and ensured user identity is recorded consistently.
+- Field creation audit entries now include the created field’s name, type, and options.
+- Fixed orphaned linked-record fields so they can be deleted after their referenced table has been removed.
+- Improved V2 compatibility across formulas, lookups, rollups, filters, sorting, grouping, search, aggregation, link validation, field lifecycle operations, and base duplication.
+- V2 writes now normalize cleared text, checkbox, attachment, user, link, and multi-value fields to `null`, while reliably enforcing required-field constraints.
+- V2 link updates now accept compatible single-link and multi-link input shapes, improving compatibility with integrations, imports, and field cardinality changes.
+- Improved V2 date validation so strict writes reject invalid calendar dates and typecast writes store invalid dates as empty values instead of silently changing them.
+- Text-to-date and formula-to-date conversions now skip invalid calendar values without blocking the entire field conversion.
+- Fixed rating field conversions to avoid invalid zero-star values and round decimal values consistently.
+- V2 record reads, updates, and deletions now apply table, row, and field permissions more consistently, including masked fields and disabled access grants.
+- Fixed V2 record updates involving users without custom avatars; initial-based avatar fallbacks continue to work normally.
+- Fixed grouped views that could fail to load when field projection omitted required grouping metadata.
+- Improved view reliability across creation, updates, sharing, imports, duplication, realtime updates, plugin views, and concurrent edits.
+- Fixed self-hosted signup so new users reliably join all eligible auto-join spaces as Viewers, including when SSO joining is also configured.
+- Improved the unsubscribe page so it remains usable after a successful preference change even if a subsequent refresh fails.
+- Fixed automations that could execute the same action chain twice, preventing duplicate messages, webhooks, and emails.
+- Automations watching formula fields now run when source-field changes update the formula, while avoiding duplicate runs and loops.
+- Improved large-delete undo and redo reliability so records are restored correctly without unexpected timeouts.
+- Reduced database pressure during large imports and table duplication by skipping unnecessary initial per-cell history entries; normal edit history remains unchanged.
+- Improved the mobile attachment preview layout, including wider spreadsheet viewing, better horizontal scrolling, non-overlapping navigation, and correct rotated-image fitting.
+- Improved base loading and navigation by reducing duplicate requests and opening previously visited, pinned, or eligible first-time bases directly when a safe destination is available.
+- Stale direct base links now fall back to the normal entry flow instead of causing redirect loops or unnecessary errors.
+- Improved localized validation messages for required and unique fields, including field-specific duplicate-value errors in bulk and selection-based operations.
+- Improved secret handling and added support for safer credential rotation.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-05T11-23-43Z.2499)
+
 ## v2026.8.6 - 2026-08-05
 
 ### Teable release.2026-08-05T08-59-48Z.2496
