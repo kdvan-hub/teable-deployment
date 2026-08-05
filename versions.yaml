@@ -5,8 +5,8 @@
 # China deployments: every ghcr.io/teableio/ image is mirrored with identical
 # tags at registry.cn-shenzhen.aliyuncs.com/teable/ (digests differ per registry; the
 # digests below are for the canonical registry shown in each reference).
-platformRelease: v2026.8.3
-releasedAt: '2026-08-03T12:06:07Z'
+platformRelease: v2026.8.4
+releasedAt: '2026-08-05T03:30:09Z'
 components:
   teable:
     image: ghcr.io/teableio/teable:release.2026-07-30T06-45-38Z.2429
@@ -28,14 +28,14 @@ components:
     - amd64
     - arm64
   teable-infra-service:
-    image: ghcr.io/teableio/teable-infra-service:20260802T150723Z
-    digest: sha256:5ed568d506387bbfc3be82388e07d9e256454d06fb1bb628fc2166f04b3e77e1
+    image: ghcr.io/teableio/teable-infra-service:20260804T094527Z
+    digest: sha256:58c75b68acb80c16082310294533773a9531f149d7a56303ccab3f70d236a0ca
     architectures:
     - amd64
     - arm64
   opensandbox-server:
-    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix8
-    digest: sha256:56647098d676b2e1186bf32ffe7dd501eb87269d0402885b1aa04c61907d55b3
+    image: ghcr.io/teableio/opensandbox-server:v0.2.0-fix9
+    digest: sha256:bb530674457d6a5db36cd70868b5ba5d924a771ffce347c9641cec07d007a8ad
     architectures:
     - amd64
     - arm64
@@ -43,8 +43,9 @@ components:
       (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for
       private-CA trust (>= fix6), the container-level securityContext backfill plus
       shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7),
-      and docker-runtime workspace-directory ownership pre-creation (>= fix8); upstream
-      does not include them yet.'
+      docker-runtime workspace-directory ownership pre-creation (>= fix8), and setgid/sticky
+      bits accepted in the subPath pre-creation dir_mode (>= fix9); upstream does
+      not include them yet.'
   opensandbox-ingress:
     image: ghcr.io/teableio/opensandbox-ingress:v1.0.7
     digest: sha256:f67bef778e4c80c7de182f76a213363ba2c5214c323823b364cda859dbd36198

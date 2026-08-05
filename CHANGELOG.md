@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.4 - 2026-08-05
 
 - **Sandbox engine `v0.2.0-fix9` accepts setgid `dir_mode`.** Values above
   `0o777` (e.g. `0o2775`) in `[kubernetes.volume_subpath_precreate]` no longer
