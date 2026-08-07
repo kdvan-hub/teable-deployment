@@ -9,6 +9,24 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-07T05-00-09Z.2531
+
+#### Feature Updates
+- Generated Teable Build and App Builder apps can now customize the favicon, browser title, and page description used across tabs, page metadata, and link previews. Favicon uploads are limited to 5 MB, and apps without a custom favicon use the new Teable default.
+
+#### Bug Fixes & Improvements
+- Improved read performance for large tables with ordered, grouped, searched, or paginated views while preserving correct pagination.
+- Improved compatibility with legacy column metadata so affected views open reliably without manual cleanup.
+- Fixed failures when creating number fields and ensured newly created fields appear correctly in grid views with incomplete metadata.
+- Admin tabs and settings now consistently reflect edition-based availability. Some commercial-only areas previously accessible without a valid license may now be restricted.
+- Fixed admin pages remaining stuck in a loading state when instance usage information could not be loaded.
+- Fixed an erroneous notification when opening filtered views on tables containing lookup-of-link fields.
+- Improved automation reliability when explicit record updates cause dependent lookup, rollup, or linked-record values to change. Watch-all automations continue to exclude updates affecting only computed host fields.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-07T05-00-09Z.2531)
+
 ## v2026.8.8 - 2026-08-06
 
 ### Teable release.2026-08-06T02-02-38Z.2503
