@@ -9,6 +9,28 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-08T06-34-24Z.2542
+
+#### Feature Updates
+
+- The queue browser now defaults to a task-level view, while retaining access to raw delivery history.
+- Recovered delivery failures are hidden by default, with a count and toggle for viewing troubleshooting details.
+- Queue status filters and outcome badges now provide clearer labels, behavior, and explanations.
+
+#### Bug Fixes & Improvements
+
+- Fixed Conditional Rollup editor crashes when using minimum or maximum calculations on date fields after a hard refresh.
+- Improved Conditional Rollup loading and formatting handling to keep the editor stable when linked fields are still loading or saved settings do not match.
+- Improved cleanup reliability for orphaned linked fields and missing database objects, preventing failed deletions and inconsistent metadata.
+- User-configured SMTP failures now return clearer upstream delivery errors and preserve provider rejection details instead of appearing as generic server errors.
+- Prevented generation runs from becoming stuck when their associated base is missing or deleted.
+- Fixed shared form cover, logo, and plugin logo images failing to load when their URLs were already absolute.
+- Improved the mobile login layout to respect device safe areas and keep the login/register switch visible and accessible.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-08T06-34-24Z.2542)
+
 ## v2026.8.10 - 2026-08-07
 
 ### Teable release.2026-08-07T08-07-22Z.2536
