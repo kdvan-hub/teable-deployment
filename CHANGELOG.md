@@ -9,6 +9,20 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-08T09-33-10Z.2547
+
+#### Feature Updates
+
+#### Bug Fixes & Improvements
+- Fixed table filter errors that could prevent filters from being saved or applied, particularly in new or previously unfiltered views.
+- Improved the admin outbox queue browser to return more complete and reliable results when reviewing failed items or using server-side search.
+- Improved handling of unrecoverable computed field refresh failures, reducing unnecessary retries and making failures available for diagnosis sooner.
+- Fixed long text field edits, including Markdown display changes, incorrectly triggering a batch confirmation dialog when no AI run was started.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-08T09-33-10Z.2547)
+
 ## v2026.8.11 - 2026-08-08
 
 ### Teable release.2026-08-08T06-34-24Z.2542
