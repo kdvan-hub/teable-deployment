@@ -9,6 +9,19 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-09T14-50-08Z.2564
+
+#### Feature Updates
+- Added clearer BYODB health statuses, in-app notifications, admin indicators, and remediation guidance for read-only, unreachable, degraded, and recovered databases.
+
+#### Bug Fixes & Improvements
+- BYODB-backed writes now return a 409 conflict when the database is read-only, while computed tasks pause to prevent repeated failures and resume after recovery.
+- Improved BYODB health consistency and recovery detection across connection checks and write failures.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-09T14-50-08Z.2564)
+
 ## v2026.8.17 - 2026-08-09
 
 ### Teable release.2026-08-09T13-07-40Z.2563
