@@ -9,6 +9,20 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-09T13-07-40Z.2563
+
+#### Feature Updates
+- Improved the Admin Outbox anomaly page by consolidating repeated database errors with changing details, making bulk recovery from incidents such as full disks more practical while preserving compatibility with existing recovery requests.
+
+#### Bug Fixes & Improvements
+- Improved handling of read-only databases to prevent repeated retry cycles and report failed operations more clearly.
+- Fixed computed field updates for imported or migrated bases containing legacy record IDs, without changing ID generation or link resolution for new records.
+- Improved performance for record operations that use ID-based mapping.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-09T13-07-40Z.2563)
+
 ## v2026.8.16 - 2026-08-09
 
 ### Teable release.2026-08-09T10-14-07Z.2559
