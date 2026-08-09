@@ -9,6 +9,21 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-08T14-46-52Z.2550
+
+#### Feature Updates
+
+#### Bug Fixes & Improvements
+
+- Improved computed and lookup field update performance across both small and high-fanout changes while preserving protective batching for large workloads.
+- Improved computed field processing reliability during database contention and prevented unnecessary retries for unrecoverable failures.
+- Improved responsiveness for record reads, creation, and deletion, especially for large tables and bulk operations.
+- Fixed deleted record snapshots not being saved correctly during bulk deletions with BYODB schemas.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-08T14-46-52Z.2550)
+
 ## v2026.8.12 - 2026-08-08
 
 ### Teable release.2026-08-08T09-33-10Z.2547
