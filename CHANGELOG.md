@@ -9,6 +9,18 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-09T10-14-07Z.2559
+
+#### Feature Updates
+
+#### Bug Fixes & Improvements
+- Fixed inaccurate failed-task counts in the admin Outbox when underlying tasks no longer exist, while preserving actual failure history.
+- Improved field creation, duplication, and deletion safety to prevent rare naming conflicts from disrupting computed updates or affecting active fields.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-09T10-14-07Z.2559)
+
 ## v2026.8.15 - 2026-08-09
 
 ### Teable release.2026-08-09T08-35-12Z.2557
