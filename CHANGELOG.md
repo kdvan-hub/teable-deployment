@@ -9,6 +9,19 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-09T04-03-28Z.2554
+
+#### Feature Updates
+
+#### Bug Fixes & Improvements
+- Improved computed field reliability for self-linked tables and deleted source fields. Rollups and lookups now update correctly or return empty values instead of failing.
+- AI field model or prompt changes now save directly when they do not trigger reruns.
+- Field change confirmations now appear only when conversions rewrite data or affect links, with more accurate checks for rating limits and computed field errors.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-09T04-03-28Z.2554)
+
 ## v2026.8.13 - 2026-08-09
 
 ### Teable release.2026-08-08T14-46-52Z.2550
