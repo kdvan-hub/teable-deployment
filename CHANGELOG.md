@@ -9,6 +9,25 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-10T07-45-10Z.2574
+
+#### Feature Updates
+- Space collaborators are now grouped and paginated by person, with Base-level permissions, permission levels, removal actions, and Base counts shown together.
+- Admins can now discard obsolete computed-task anomaly groups that can no longer be recovered.
+- Base imports now support webhook-only Bases without tables.
+
+#### Bug Fixes & Improvements
+- Improved record creation stability and latency during high-concurrency workloads by optimizing space row-count calculations and refreshes. Unlinked physical tables are no longer included in space row quotas.
+- Fixed stale computed-task errors and inaccurate Admin attention counts after Bases or tables are permanently deleted or moved between data stores.
+- Prevented record writes from freezing during heavy database contention by limiting waits and allowing nonessential activity updates to be reconciled later.
+- Improved lookup and cascading update performance, especially for multi-level lookup and foreign-link chains.
+- Improved BYODB connection security. Configurations using private or internal network database addresses may now fail validation.
+- Improved Base import and export reliability by preserving field descriptions and AI configuration after re-import.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-10T07-45-10Z.2574)
+
 ## v2026.8.18 - 2026-08-09
 
 ### Teable release.2026-08-09T14-50-08Z.2564
