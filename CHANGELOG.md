@@ -9,6 +9,32 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-11T13-42-32Z.2596
+
+#### Feature Updates
+- Published App Builder apps can now use custom favicons, page titles, and descriptions for browser tabs, page metadata, and sharing previews. Apps without a custom favicon use the new default Teable Build favicon.
+- Automation Script nodes can now run for up to 180 seconds, allowing longer-running tasks to complete.
+- Added an instance-wide admin setting to control whether platform-managed AI API keys are automatically provided to Apps. The setting remains enabled by default; when disabled, Apps must use their own approved AI credentials.
+
+#### Bug Fixes & Improvements
+- Grid view grouping and sorting changes now apply immediately after saving and remain consistent across view settings, the current display, and collaborator updates. Rapid consecutive changes more reliably use the latest saved configuration.
+- Fixed failed AI-created tables appearing as inaccessible entries in the sidebar. Existing invalid entries are removed automatically when the sidebar next refreshes.
+- Fixed self-hosted license checkout being blocked when an expired, incomplete subscription was incorrectly treated as active.
+- Fixed truncated linked-record pills overflowing into adjacent Grid cells and standardized ellipses to display consistently.
+- Fixed user-grouped views showing duplicate “add record” rows, restarting row numbers, or misplacing records. Collaborators are now grouped consistently across legacy and multi-user values.
+- Fixed Last Modified By and Editor fields exposing internal user IDs instead of readable names. User names and fallback states are now consistent across record views, APIs, and collaborator fields.
+- Improved computed-field reliability when a workspace or base is paused. Deferred updates now resume correctly when the pause expires or is ended early, reducing backlogs and performance degradation.
+- Improved AI Chat recovery from temporary connection interruptions, reducing failed responses caused by unexpectedly dropped streams.
+- Fixed concurrent relational updates leaving chained lookup fields stale. Multi-level lookup results now converge more reliably on the latest values.
+- Restored user-field resolution and typecasting for scoped collaborators, phone numbers, and Enterprise department members. Unrelated or deleted users are now rejected, and user display data resolves more reliably.
+- Improved computed-field reliability for BYODB configurations with read-only targets.
+- Improved computed activity processing during high database contention, reducing the risk of cascading write slowdowns or freezes.
+- Fixed Chat showing duplicate assistant rows when a response was stopped and another message was sent immediately. Live, stopped, resent, and resumed responses now maintain a consistent message state.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-11T13-42-32Z.2596)
+
 ## v2026.8.19 - 2026-08-10
 
 ### Teable release.2026-08-10T07-45-10Z.2574
