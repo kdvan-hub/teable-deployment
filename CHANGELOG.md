@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.23 - 2026-08-13
 
 - **Sandbox memory backpressure now defaults to on.** Helm installs are
   unaffected (the chart has always set `SANDBOX_BACKPRESSURE_ENABLED`
