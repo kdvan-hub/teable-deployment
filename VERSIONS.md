@@ -1,6 +1,6 @@
 # Versions
 
-> Generated for platform release **v2026.8.21** (2026-08-12T13:41:52Z) -- do not edit
+> Generated for platform release **v2026.8.22** (2026-08-13T06:06:09Z) -- do not edit
 > by hand. Machine-readable copy: [`versions.yaml`](versions.yaml)
 > (schema: [`schemas/versions.schema.json`](schemas/versions.schema.json)).
 
@@ -19,7 +19,7 @@ across releases. What changed between releases: [`CHANGELOG.md`](CHANGELOG.md).
 | `opensandbox-server` | `ghcr.io/teableio/opensandbox-server:v0.2.0-fix9` | amd64, arm64 | Patched build: adds the /v1 mount-prefix fix for proxied sandbox endpoints (path-proxy mode needs >= fix5), docker-runtime sandbox_env/sandbox_binds for private-CA trust (>= fix6), the container-level securityContext backfill plus shared-volume subPath pre-creation that unprivileged sandboxes need (>= fix7), docker-runtime workspace-directory ownership pre-creation (>= fix8), and setgid/sticky bits accepted in the subPath pre-creation dir_mode (>= fix9) |
 | `opensandbox-ingress` | `ghcr.io/teableio/opensandbox-ingress:v1.0.7` | amd64, arm64 |  |
 | `opensandbox-controller` | `ghcr.io/teableio/opensandbox-controller:v0.2.0` | amd64, arm64 |  |
-| `opensandbox-image-committer` | `ghcr.io/teableio/opensandbox-image-committer:v0.1.0` | amd64, arm64 | Also runs the node image-preheater DaemonSet. |
+| `opensandbox-image-committer` | `ghcr.io/teableio/opensandbox-image-committer:v0.1.0` | amd64, arm64 | Also used as the hold container of the app-triggered agent-image preheat DaemonSet (created by infra-service at runtime). |
 | `opensandbox-execd` | `ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3` | amd64, arm64 | Patched build: upstream v1.0.19 (the execd release matching server v0.2.0), the issue #1064 fix (owner/group on auto-created parent directories) and, from fix3, the credential handling an unprivileged sandbox needs (an older execd fails every command with `operation not permitted`) |
 | `opensandbox-egress` | `ghcr.io/teableio/opensandbox-egress:v1.0.12` | amd64, arm64 | Per-sandbox egress sidecar, started by the server on demand. |
 | `postgres` | `postgres:15.4` | amd64, arm64 |  |

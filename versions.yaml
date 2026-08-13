@@ -5,8 +5,8 @@
 # China deployments: every ghcr.io/teableio/ image is mirrored with identical
 # tags at registry.cn-shenzhen.aliyuncs.com/teable/ (digests differ per registry; the
 # digests below are for the canonical registry shown in each reference).
-platformRelease: v2026.8.21
-releasedAt: '2026-08-12T13:41:52Z'
+platformRelease: v2026.8.22
+releasedAt: '2026-08-13T06:06:09Z'
 components:
   teable:
     image: ghcr.io/teableio/teable:release.2026-08-12T12-26-10Z.2619
@@ -64,7 +64,8 @@ components:
     architectures:
     - amd64
     - arm64
-    note: Also runs the node image-preheater DaemonSet.
+    note: Also used as the hold container of the app-triggered agent-image preheat
+      DaemonSet (created by infra-service at runtime).
   opensandbox-execd:
     image: ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3
     digest: sha256:996e8460bd58ef7fb2680a2884f3a36ddf37755fc819f942b5f70a82b745c11b

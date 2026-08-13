@@ -1,6 +1,6 @@
 # Images
 
-> Generated for platform release **v2026.8.21** -- do not edit by hand.
+> Generated for platform release **v2026.8.22** -- do not edit by hand.
 > The authoritative pin list (with digests) is [`../versions.yaml`](../versions.yaml).
 
 All first-party images are published multi-arch (amd64 + arm64) and
@@ -74,9 +74,9 @@ Then substitute your prefix in `.env` / your values, and add it to
 `opensandbox-execd` is injected into **every sandbox container** by the
 sandbox engine, and `opensandbox-egress` is started as a per-sandbox sidecar
 on demand -- sandbox nodes must be able to pull both. On Kubernetes the
-kubelet pulls them on first use and keeps them in the node image cache (both
-are small); on Docker, `prepull.sh` warms them. Upgrade them only together
-with `opensandbox-server` (one platform release moves them as a set).
+bundled image-preheater DaemonSet pre-pulls them on every node; on Docker,
+`prepull.sh` warms them. Upgrade them only together with `opensandbox-server`
+(one platform release moves them as a set).
 
 ## Sandbox agent
 
