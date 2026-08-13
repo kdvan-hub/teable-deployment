@@ -20,7 +20,6 @@ bare install deploys only the sandbox engine):
 | Infra Service | `infraService.enabled` | Control-plane API: monitoring, file browser, sandbox and App Runtime orchestration |
 | Git Registry | `gitRegistry.enabled` | Git-over-HTTP registry for App Builder sources |
 | App Runtime | `appRuntime.enabled` | Namespace, quotas, RBAC, and ingress for deployed apps |
-| Image Preheater | `imagePreheater.enabled` | DaemonSet that pre-pulls sandbox images onto nodes |
 | Runtime NetworkPolicy | `runtimeNetworkPolicy.enabled` | Egress policies for the sandbox and app namespaces |
 | Registry GC | `registryGc.enabled` | CronJob pruning `ci-*` tags of an existing docker-registry |
 | Storage Autoscaler | `storageAutoscaler.enabled` | PVC autoscaling policies (Alibaba Cloud ACK only) |
@@ -73,7 +72,6 @@ helm install opensandbox helm/teable-infra \
 | `infraService.enabled` | `false` | Deploy the Infra Service control plane (`infraService.image` required) |
 | `gitRegistry.enabled` | `false` | Deploy the Git Registry (`gitRegistry.publicUrl` required) |
 | `appRuntime.enabled` | `false` | Provision the app namespace, quotas, RBAC, and ingress |
-| `imagePreheater.enabled` | `false` | Pre-pull sandbox images on nodes |
 | `runtimeNetworkPolicy.enabled` | `false` | Apply egress NetworkPolicies to runtime namespaces |
 | `registryGc.enabled` | `false` | Weekly docker-registry GC (requires an existing registry) |
 | `storageAutoscaler.enabled` | `false` | ACK-specific PVC autoscaling policies |

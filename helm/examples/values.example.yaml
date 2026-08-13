@@ -84,8 +84,7 @@ global:
 # Two more references hide inside `opensandbox-server.configToml` (execd_image
 # and [egress].image, injected into sandboxes at runtime): to mirror them, copy
 # the configToml block from helm/opensandbox-server/values.yaml into your
-# values and swap the prefixes there too, and keep `imagePreheater.images`
-# pointing at the same references. When you swap the app-runtime prefix, also
+# values and swap the prefixes there too. When you swap the app-runtime prefix, also
 # add it to `infraService.appRuntime.allowedImagePrefixes` (the allowlist must
 # contain the default image's prefix, or app deployment is rejected).
 

@@ -248,28 +248,6 @@ global:
   # imagePullSecrets:
   #   - name: my-registry-secret
 
-imagePreheater:
-  # default-on: pre-pulls sandbox images on every node so first sandbox start is fast
-  enabled: true
-  namespaceOverride: opensandbox-system
-  image: ghcr.io/teableio/opensandbox-image-committer:v0.1.0
-  imagePullPolicy: IfNotPresent
-  containerdSocketPath: /run/containerd/containerd.sock
-  containerdNamespace: k8s.io
-  authSecretName: ""
-  imagePullSecrets: []
-  refreshIntervalSeconds: 3600
-  pullRetryCount: 3
-  pullRetrySleepSeconds: 5
-  nodeSelector: {}
-  tolerations: []
-  # Platform sidecars only (matching the opensandbox-server config defaults). The sandbox
-  # agent image is NOT listed here: the Teable app preheats its own agent image through
-  # the Infra API on startup (prefix + its own release tag).
-  images:
-    - ghcr.io/teableio/opensandbox-execd:v1.0.19-fix3
-    - ghcr.io/teableio/opensandbox-egress:v1.0.12
-
 # Sandbox dataplane namespace (where BatchSandbox pods run). Must match the
 # opensandbox-server [kubernetes].namespace config, the gateway dataplaneNamespace
 # and runtimeNetworkPolicy.sandbox.namespace.

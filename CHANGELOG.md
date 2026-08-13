@@ -9,6 +9,22 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Static image-preheater DaemonSet retired
+
+The chart no longer ships the nerdctl-based `imagePreheater` DaemonSet (the
+`imagePreheater.*` values are gone). The sandbox agent image is already
+preheated per node by the app-triggered `opensandbox-current-image-preheat`
+DaemonSet, which pulls through the kubelet and therefore also works on
+non-default containerd snapshotters (e.g. ACK image acceleration/overlaybd,
+where the retired DaemonSet pre-pulled into the wrong snapshotter and warmed
+nothing). The small engine sidecars are pulled on first use.
+
+Action: none — `helm upgrade` deletes the DaemonSet; leftover
+`imagePreheater.*` values are ignored. To confirm agent preheat:
+`kubectl -n opensandbox-system get ds opensandbox-current-image-preheat`.
+
 ## v2026.8.21 - 2026-08-12
 
 ### Teable release.2026-08-12T12-26-10Z.2619
