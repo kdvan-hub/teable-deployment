@@ -88,9 +88,9 @@ spec:
             - name: GIT_REGISTRY_HOOKS_DIR
               value: "/app/hooks"
             - name: GIT_REGISTRY_REPO_SIZE_LIMIT
-              value: {{ $gitRegistry.repoSizeLimitBytes | default 104857600 | quote }}
+              value: {{ $gitRegistry.repoSizeLimitBytes | default 104857600 | int64 | quote }}
             - name: GIT_REGISTRY_MAX_INPUT_SIZE
-              value: {{ $gitRegistry.maxInputSizeBytes | default 67108864 | quote }}
+              value: {{ $gitRegistry.maxInputSizeBytes | default 67108864 | int64 | quote }}
             - name: GIT_REGISTRY_MAX_CONCURRENT_GIT
               value: {{ $gitRegistry.maxConcurrentGit | default 32 | quote }}
             - name: GIT_REGISTRY_GIT_TIMEOUT_MS

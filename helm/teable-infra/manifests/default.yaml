@@ -1683,9 +1683,9 @@ spec:
         - name: GIT_REGISTRY_HOOKS_DIR
           value: "/app/hooks"
         - name: GIT_REGISTRY_REPO_SIZE_LIMIT
-          value: '1.048576e+08'
+          value: '104857600'
         - name: GIT_REGISTRY_MAX_INPUT_SIZE
-          value: '6.7108864e+07'
+          value: '67108864'
         - name: GIT_REGISTRY_MAX_CONCURRENT_GIT
           value: '32'
         - name: GIT_REGISTRY_GIT_TIMEOUT_MS
@@ -1890,7 +1890,7 @@ spec:
         - name: APP_RUNTIME_ARTIFACT_UPLOAD_TTL_SECONDS
           value: '900'
         - name: APP_RUNTIME_ARTIFACT_MAX_BYTES
-          value: '2.68435456e+08'
+          value: '268435456'
         - name: APP_RUNTIME_UNHEALTHY_TTL_SECONDS
           value: '21600'
         - name: APP_RUNTIME_CLEANUP_INTERVAL_SECONDS

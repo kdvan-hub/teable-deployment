@@ -9,6 +9,28 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Sandbox memory backpressure now defaults to on.** Helm installs are
+  unaffected (the chart has always set `SANDBOX_BACKPRESSURE_ENABLED`
+  explicitly). Hand-managed Kubernetes deployments that never set it will start
+  tainting sandbox-pool nodes under memory pressure after upgrading; set
+  `SANDBOX_BACKPRESSURE_ENABLED: "false"` to keep the old behavior.
+- **Backpressure warns when its node selector matches no nodes.** A mislabeled
+  sandbox node pool used to make the feature a silent no-op; it now logs a
+  warning and logs again on recovery. No action needed.
+- **Fixed three chart numbers rendering in scientific notation**
+  (`infraService.appRuntime.artifactMaxBytes`, `gitRegistry.repoSizeLimitBytes`,
+  `gitRegistry.maxInputSizeBytes` — e.g. `268435456` rendered as
+  `"2.68435456e+08"`). No action needed.
+- **In-code defaults now match chart defaults** for
+  `APP_RUNTIME_ARTIFACT_STORE_PROVIDER` (`gcs` → `s3`),
+  `IMAGE_PREHEAT_NODE_SELECTOR_VALUE` (`sandbox-pool` → `linux`),
+  `IMAGE_PREHEAT_HOLD_IMAGE` (now the public `ghcr.io` image), and
+  `HISTORY_WINDOW_SECONDS` (`14400` → `600`). Helm installs are unaffected;
+  hand-managed deployments that relied on an old in-code default should set the
+  env var explicitly.
+
 ## v2026.8.22 - 2026-08-13
 
 ### Static image-preheater DaemonSet retired

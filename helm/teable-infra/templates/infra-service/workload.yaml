@@ -208,7 +208,7 @@ spec:
             - name: APP_RUNTIME_ARTIFACT_UPLOAD_TTL_SECONDS
               value: {{ .Values.infraService.appRuntime.artifactUploadTtlSeconds | default 900 | quote }}
             - name: APP_RUNTIME_ARTIFACT_MAX_BYTES
-              value: {{ .Values.infraService.appRuntime.artifactMaxBytes | default 268435456 | quote }}
+              value: {{ .Values.infraService.appRuntime.artifactMaxBytes | default 268435456 | int64 | quote }}
             - name: APP_RUNTIME_UNHEALTHY_TTL_SECONDS
               value: {{ .Values.infraService.appRuntime.unhealthyTtlSeconds | default 21600 | quote }}
             - name: APP_RUNTIME_CLEANUP_INTERVAL_SECONDS
