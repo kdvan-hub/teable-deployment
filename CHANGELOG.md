@@ -9,6 +9,14 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Fixed the sandbox benchmark failing when `OPENSANDBOX_RUNTIME_URL` uses
+  `http://`.** The runtime client always spoke HTTPS on port 443, so an
+  in-cluster URL such as `http://opensandbox-server.<ns>.svc.cluster.local`
+  (which serves plain HTTP on port 80) was refused. It now picks the transport
+  and default port from the URL scheme. No action needed.
+
 ## v2026.8.23 - 2026-08-13
 
 - **Sandbox memory backpressure now defaults to on.** Helm installs are
