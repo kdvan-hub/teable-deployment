@@ -176,6 +176,15 @@ spec:
               value: {{ .Values.infraService.appRuntime.defaultImage | default "" | quote }}
             - name: APP_RUNTIME_REGISTRY_SECRET_NAME
               value: {{ .Values.infraService.appRuntime.registrySecretName | default "opensandbox-preheater-registry" | quote }}
+            {{- /* npm mirror for the runtime install fallback; blank inherits the
+                   sandbox-plane knob so one value covers both install paths. */}}
+            {{- $npmRegistry := .Values.infraService.appRuntime.npmRegistry | default (get $global "sandboxNpmRegistry" | default "") }}
+            {{- $npmSource := ternary "infraService.appRuntime.npmRegistry" "global.sandboxNpmRegistry" (not (empty .Values.infraService.appRuntime.npmRegistry)) }}
+            {{- include "opensandbox-server.validateNpmRegistry" (dict "name" $npmSource "value" $npmRegistry) }}
+            {{- if $npmRegistry }}
+            - name: APP_RUNTIME_NPM_REGISTRY
+              value: {{ $npmRegistry | quote }}
+            {{- end }}
             - name: APP_RUNTIME_DEFAULT_REPLICAS
               value: {{ .Values.infraService.appRuntime.defaultReplicas | default 1 | quote }}
             - name: APP_RUNTIME_DEFAULT_CPU_REQUEST

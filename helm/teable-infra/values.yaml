@@ -160,6 +160,15 @@ global:
     # Red Hat based images use /etc/pki/tls/certs/ca-bundle.crt.
     caCertificatesPath: /etc/ssl/certs/ca-certificates.crt
 
+  # npm registry mirror for every workload that installs npm packages: sandboxes
+  # (NPM_CONFIG_REGISTRY / COREPACK_NPM_REGISTRY in batchSandboxTemplate) and
+  # App Runtime pods (infraService.appRuntime.npmRegistry overrides that plane).
+  # Empty = official registry, nothing injected. Workload-supplied env of the
+  # same name wins; only NEW sandboxes / (re)created app Deployments pick up a
+  # change. The value lands in pod specs in clear text, so don't embed
+  # credentials. Example for mainland China: https://registry.npmmirror.com
+  sandboxNpmRegistry: ""
+
   # ---- Sandbox scheduling v2 (docs/sandbox-scheduling-v2.md) ----
   # One knob shared by this chart (headroom balloons, backpressure loop) and the
   # opensandbox-server sub-chart (pod template merge, request envs). Defaults
@@ -583,6 +592,11 @@ infraService:
     # App base image users deploy on; blank would leave app deployment disabled.
     defaultImage: ghcr.io/teableio/teable-app-runtime:20260717T042653Z
     registrySecretName: opensandbox-preheater-registry
+    # npm registry mirror for the runtime install fallback (non-standalone
+    # artifacts run `pnpm install` at pod start, and corepack fetches the
+    # package manager itself). Blank: inherit global.sandboxNpmRegistry so one
+    # knob covers both planes; set only to diverge from the sandbox mirror.
+    npmRegistry: ""
     defaultReplicas: 1
     defaultCpuRequest: 25m
     defaultMemoryRequest: 96Mi

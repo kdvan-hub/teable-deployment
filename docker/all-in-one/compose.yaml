@@ -77,6 +77,7 @@ services:
       APP_RUNTIME_HOST_MATCH_MODE: suffix
       APP_RUNTIME_DEFAULT_IMAGE: ${APP_RUNTIME_DEFAULT_IMAGE:-}
       APP_RUNTIME_ALLOWED_IMAGE_PREFIXES: ${APP_RUNTIME_ALLOWED_IMAGE_PREFIXES:-ghcr.io/teableio/}
+      APP_RUNTIME_NPM_REGISTRY: ${APP_RUNTIME_NPM_REGISTRY:-}   # npm mirror for app containers' install fallback (blank = official registry)
       APP_RUNTIME_ARTIFACT_PUBLIC_ORIGIN: http://infra-service:8080   # app containers pull artifacts from origin (internal service name)
       # --- Artifact store S3/MinIO (ENDPOINT set in overlays; presigned URLs bind to its host) ---
       APP_RUNTIME_ARTIFACT_STORE_PROVIDER: s3

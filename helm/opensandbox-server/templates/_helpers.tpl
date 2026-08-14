@@ -243,6 +243,32 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if $ca.enabled -}}true{{- end -}}
 {{- end }}
 
+{{- /* ---- Sandbox npm registry mirror (global.sandboxNpmRegistry) ----
+       One knob shared with the umbrella chart. When set, every sandbox gets
+       NPM_CONFIG_REGISTRY (npm / pnpm / bun / yarn 1) and COREPACK_NPM_REGISTRY
+       (corepack downloading the package manager itself) pointed at the mirror,
+       so dependency installs work in networks where registry.npmjs.org is slow
+       or unreachable. Env entries already present in the operator template win.
+       Note these env vars take precedence over a project .npmrc default
+       registry; scoped registries (@scope:registry=...) are unaffected. */}}
+
+{{- /* Basic render-time sanity check, shared by the global knob and the App
+       Runtime override in the umbrella chart: catch a missing scheme (the
+       common typo) at render instead of at runtime. The operator is trusted
+       beyond that. Usage: include ... (dict "name" "<values path>" "value" $v) */}}
+{{- define "opensandbox-server.validateNpmRegistry" -}}
+{{- if and .value (not (or (hasPrefix "http://" .value) (hasPrefix "https://" .value))) -}}
+{{- fail (printf "%s must be an http(s) URL, got %q" .name .value) -}}
+{{- end -}}
+{{- end }}
+
+{{- define "opensandbox-server.sandboxNpmRegistry" -}}
+{{- $reg := "" -}}
+{{- with .Values.global }}{{- with .sandboxNpmRegistry }}{{- $reg = . -}}{{- end }}{{- end -}}
+{{- include "opensandbox-server.validateNpmRegistry" (dict "name" "global.sandboxNpmRegistry" "value" $reg) -}}
+{{- $reg -}}
+{{- end }}
+
 {{- /* ---- Sandbox security hardening (helm/README.md) ----
        global.sandboxSecurity is one knob shared with the umbrella chart. Unlike
        every other overlay here, these switches WIN over the operator template:
@@ -274,7 +300,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
        config.toml already points at the file path by default, so mounting it
        is always safe. */}}
 {{- define "opensandbox-server.hasBatchSandboxTemplate" -}}
-{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) (include "opensandbox-server.privateCaEnabled" .) (include "opensandbox-server.securityEnabled" .) -}}true{{- end -}}
+{{- if or .Values.server.batchSandboxTemplate (include "opensandbox-server.schedulingPackingEnabled" .) (include "opensandbox-server.schedulingMemoryLimit" .) (include "opensandbox-server.privateCaEnabled" .) (include "opensandbox-server.securityEnabled" .) (include "opensandbox-server.sandboxNpmRegistry" .) -}}true{{- end -}}
 {{- end }}
 
 {{- /* Render the batchsandbox template with scheduling switches applied.
@@ -287,7 +313,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- $privateCa := include "opensandbox-server.privateCaEnabled" . -}}
 {{- $nonRoot := include "opensandbox-server.securityNonRootEnabled" . -}}
 {{- $seccomp := include "opensandbox-server.securitySeccompProfile" . -}}
-{{- if not (or $packing $memoryLimit $privateCa $nonRoot $seccomp) -}}
+{{- $npmRegistry := include "opensandbox-server.sandboxNpmRegistry" . -}}
+{{- if not (or $packing $memoryLimit $privateCa $nonRoot $seccomp $npmRegistry) -}}
 {{- .Values.server.batchSandboxTemplate -}}
 {{- else -}}
 {{- $tpl := dict -}}
@@ -404,6 +431,37 @@ spec:
 {{- $newPodSpec := $template.spec | default dict -}}
 {{- $_ := set $newPodSpec "containers" $containers -}}
 {{- $_ := set $newPodSpec "volumes" $volumes -}}
+{{- $_ := set $template "spec" $newPodSpec -}}
+{{- $_ := set $spec "template" $template -}}
+{{- $_ := set $merged "spec" $spec -}}
+{{- end -}}
+{{- if $npmRegistry -}}
+{{- $npmEnv := list
+      (dict "name" "NPM_CONFIG_REGISTRY" "value" $npmRegistry)
+      (dict "name" "COREPACK_NPM_REGISTRY" "value" $npmRegistry) -}}
+{{- $podSpec := dig "spec" "template" "spec" dict $merged -}}
+{{- $containers := $podSpec.containers | default list -}}
+{{- $touched := false -}}
+{{- range $c := $containers -}}
+{{- if eq (get $c "name") "sandbox" -}}
+{{- /* Same precedence as the private-CA env: an entry already present in the
+       operator template wins, so a single deployment can pin its own
+       registry without fighting the global switch. */ -}}
+{{- $env := $c.env | default list -}}
+{{- $names := list -}}
+{{- range $e := $env }}{{- $names = append $names (get $e "name") -}}{{- end -}}
+{{- range $e := $npmEnv }}{{- if not (has (get $e "name") $names) }}{{- $env = append $env $e -}}{{- end }}{{- end -}}
+{{- $_ := set $c "env" $env -}}
+{{- $touched = true -}}
+{{- end -}}
+{{- end -}}
+{{- if not $touched -}}
+{{- $containers = append $containers (dict "name" "sandbox" "env" $npmEnv) -}}
+{{- end -}}
+{{- $spec := $merged.spec | default dict -}}
+{{- $template := $spec.template | default dict -}}
+{{- $newPodSpec := $template.spec | default dict -}}
+{{- $_ := set $newPodSpec "containers" $containers -}}
 {{- $_ := set $template "spec" $newPodSpec -}}
 {{- $_ := set $spec "template" $template -}}
 {{- $_ := set $merged "spec" $spec -}}

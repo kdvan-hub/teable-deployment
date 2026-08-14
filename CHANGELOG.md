@@ -9,6 +9,12 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **npm registry mirror switch for sandboxes and app deployments.** Set
+  `global.sandboxNpmRegistry` (e.g. `https://registry.npmmirror.com`) to route
+  npm/pnpm installs through a mirror. Blank (the default) changes nothing.
+
 ## v2026.8.25 - 2026-08-14
 
 ### Teable release.2026-08-14T06-35-14Z.2641
