@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.24 - 2026-08-14
 
 - **Fixed the sandbox benchmark failing when `OPENSANDBOX_RUNTIME_URL` uses
   `http://`.** The runtime client always spoke HTTPS on port 443, so an
