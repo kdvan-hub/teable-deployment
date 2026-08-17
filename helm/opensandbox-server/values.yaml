@@ -49,11 +49,11 @@ server:
   # -- Resource requests and limits
   resources:
     limits:
-      cpu: "2"
-      memory: 8Gi
-    requests:
       cpu: "1"
-      memory: 4Gi
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
 
   tolerations: []
   affinity: {}
@@ -173,11 +173,11 @@ server:
     logLevel: "info"
     resources:
       limits:
-        cpu: "2"
-        memory: 8Gi
+        cpu: 500m
+        memory: 512Mi
       requests:
-        cpu: "1"
-        memory: 4Gi
+        cpu: 50m
+        memory: 128Mi
     ingress:
       enabled: false
       className: ""

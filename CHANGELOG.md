@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Lower default resources for `opensandbox-server` and its ingress gateway.**
+  Chart defaults were sized far above observed production usage. Server:
+  requests `1 CPU / 4Gi` → `100m / 512Mi`, limits `2 CPU / 8Gi` → `1 CPU / 2Gi`.
+  Gateway: requests `1 CPU / 4Gi` → `50m / 128Mi`, limits `2 CPU / 8Gi` →
+  `500m / 512Mi`. Installs that set `server.resources` /
+  `server.gateway.resources` explicitly are unaffected; if you relied on the
+  old defaults for heavy workloads, set them explicitly in your values.
+
 ## v2026.8.27 - 2026-08-14
 
 ### Teable release.2026-08-14T12-12-01Z.2647
