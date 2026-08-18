@@ -9,6 +9,28 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-18T10-54-07Z.2696
+
+#### Feature Updates
+
+- Improved the Space page layout on mobile so navigation remains easy to use when the top section contains more information.
+- Made the desktop entry point for opening a base more prominent for quicker access.
+
+#### Bug Fixes & Improvements
+
+- Fixed failures when updating or converting number lookup fields with stale metadata, preventing invalid values from causing backfill errors.
+- Improved lookup field schema updates and rebuilds to reduce failed operations during display-only changes.
+- Improved conditional lookup and rollup processing on large tables, reducing timeouts and failed updates by using more efficient filtering and indexes.
+- Fixed a crash when viewing numeric lookup columns with missing formatting settings; these fields now use the default number format.
+- Updates now handle trashed referenced tables correctly by skipping affected steps while continuing with active tables.
+- Fixed billing period and timezone handling so usage dialogs, charts, and history consistently show the correct cycle for paid and free plans.
+- Fixed the branding link in public form footers so it opens the Teable website directly.
+- Fixed add-on credit resets so allowances refresh according to their own grant cycle without duplicate grants, with the reset time shown more clearly.
+
+[Full release notes](https://github.com/teableio/teable/releases/tag/release.2026-08-18T10-54-07Z.2696)
+
 ## v2026.8.31 - 2026-08-18
 
 - **Keyless OSS artifact store via RRSA (Alibaba Cloud ACK).** Optional
