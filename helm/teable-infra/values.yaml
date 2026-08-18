@@ -450,7 +450,7 @@ infraService:
     knativeCompat: true
   namespaceOverride: opensandbox-system
   # Public delivery image so a bare install is turnkey; override with your own build if needed.
-  image: ghcr.io/teableio/teable-infra-service:20260814T084033Z
+  image: ghcr.io/teableio/teable-infra-service:20260818T102901Z
   imagePullPolicy: IfNotPresent
   # Image pull secrets for the infra-service deployment. Each entry: {name: <secret-name>}.
   # imagePullSecrets: []
@@ -628,6 +628,19 @@ infraService:
       accessKeySecretKey: access-key-secret
       securityTokenSecretName: ""
       securityTokenKey: security-token
+      # RRSA (Alibaba Cloud's IRSA): when enabled, no static AccessKey is needed — the
+      # chart injects a projected OIDC token volume plus the ALIBABA_CLOUD_* env vars and
+      # infra-service exchanges the token for temporary STS credentials via
+      # AssumeRoleWithOIDC; accessKeySecretName is no longer required. Prerequisites: the
+      # ACK cluster has RRSA enabled, and the RAM role trusts this chart's infra-service
+      # ServiceAccount (oidc:sub = system:serviceaccount:<ns>:<sa>) with bucket access.
+      rrsa:
+        enabled: false
+        roleArn: ""
+        oidcProviderArn: ""
+        # Blank: the public endpoint https://sts.aliyuncs.com; inside a VPC you may
+        # point this at https://sts-vpc.<region>.aliyuncs.com instead.
+        stsEndpoint: ""
     artifactS3:
       # Blank: derived from global.baseDomain (https://s3.<base>), i.e. the bundled MinIO ingress.
       endpoint: ""

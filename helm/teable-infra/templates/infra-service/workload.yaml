@@ -11,6 +11,9 @@
 {{- end }}
 {{- /* s3 is the full-stack default (bundled MinIO); internal profiles set gcs/oss explicitly, so they are unaffected by the fallback. */}}
 {{- $artifactProvider := .Values.infraService.appRuntime.artifactStoreProvider | default "s3" }}
+{{- $artifactOss := .Values.infraService.appRuntime.artifactOss }}
+{{- /* RRSA on/off: the env, volumeMounts and volumes blocks must share this single predicate — a mismatch leaves the token volume and its mount out of sync. */}}
+{{- $ossRrsaOn := and (eq $artifactProvider "oss") (($artifactOss.rrsa).enabled) }}
 {{- /* Private CA trust: mounts the CA bundle into the infra-service pod (outbound
        HTTPS such as the app public-endpoint probe) and forwards the ConfigMap name
        so App Runtime pods get the same mount. The mount path and the root-ca.crt
@@ -224,25 +227,43 @@ spec:
               value: {{ .Values.infraService.appRuntime.cleanupIntervalSeconds | default 900 | quote }}
             {{- if eq $artifactProvider "oss" }}
             - name: APP_RUNTIME_ARTIFACT_OSS_ENDPOINT
-              value: {{ required "infraService.appRuntime.artifactOss.endpoint is required when artifactStoreProvider=oss" .Values.infraService.appRuntime.artifactOss.endpoint | quote }}
+              value: {{ required "infraService.appRuntime.artifactOss.endpoint is required when artifactStoreProvider=oss" $artifactOss.endpoint | quote }}
             - name: APP_RUNTIME_ARTIFACT_OSS_REGION
-              value: {{ required "infraService.appRuntime.artifactOss.region is required when artifactStoreProvider=oss" .Values.infraService.appRuntime.artifactOss.region | quote }}
+              value: {{ required "infraService.appRuntime.artifactOss.region is required when artifactStoreProvider=oss" $artifactOss.region | quote }}
+            {{- if $ossRrsaOn }}
+            {{- /* RRSA (Alibaba Cloud's IRSA): no static AccessKey. Env names follow the
+                   Alibaba Cloud credentials-chain convention; the token comes from the
+                   projected serviceAccountToken volume below and infra-service exchanges
+                   it for temporary STS credentials via AssumeRoleWithOIDC. Requires RRSA
+                   enabled on the cluster and a RAM role trusting this ServiceAccount. */}}
+            - name: ALIBABA_CLOUD_ROLE_ARN
+              value: {{ required "infraService.appRuntime.artifactOss.rrsa.roleArn is required when rrsa.enabled" $artifactOss.rrsa.roleArn | quote }}
+            - name: ALIBABA_CLOUD_OIDC_PROVIDER_ARN
+              value: {{ required "infraService.appRuntime.artifactOss.rrsa.oidcProviderArn is required when rrsa.enabled" $artifactOss.rrsa.oidcProviderArn | quote }}
+            - name: ALIBABA_CLOUD_OIDC_TOKEN_FILE
+              value: /var/run/secrets/ack-rrsa/token
+            {{- if $artifactOss.rrsa.stsEndpoint }}
+            - name: ALIBABA_CLOUD_STS_ENDPOINT
+              value: {{ $artifactOss.rrsa.stsEndpoint | quote }}
+            {{- end }}
+            {{- else }}
             - name: APP_RUNTIME_ARTIFACT_OSS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "infraService.appRuntime.artifactOss.accessKeySecretName is required when artifactStoreProvider=oss" .Values.infraService.appRuntime.artifactOss.accessKeySecretName | quote }}
-                  key: {{ .Values.infraService.appRuntime.artifactOss.accessKeyIdKey | default "access-key-id" | quote }}
+                  name: {{ required "infraService.appRuntime.artifactOss.accessKeySecretName is required when artifactStoreProvider=oss (or enable artifactOss.rrsa)" $artifactOss.accessKeySecretName | quote }}
+                  key: {{ $artifactOss.accessKeyIdKey | default "access-key-id" | quote }}
             - name: APP_RUNTIME_ARTIFACT_OSS_ACCESS_KEY_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "infraService.appRuntime.artifactOss.accessKeySecretName is required when artifactStoreProvider=oss" .Values.infraService.appRuntime.artifactOss.accessKeySecretName | quote }}
-                  key: {{ .Values.infraService.appRuntime.artifactOss.accessKeySecretKey | default "access-key-secret" | quote }}
-            {{- if .Values.infraService.appRuntime.artifactOss.securityTokenSecretName }}
+                  name: {{ required "infraService.appRuntime.artifactOss.accessKeySecretName is required when artifactStoreProvider=oss (or enable artifactOss.rrsa)" $artifactOss.accessKeySecretName | quote }}
+                  key: {{ $artifactOss.accessKeySecretKey | default "access-key-secret" | quote }}
+            {{- if $artifactOss.securityTokenSecretName }}
             - name: APP_RUNTIME_ARTIFACT_OSS_SECURITY_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.infraService.appRuntime.artifactOss.securityTokenSecretName | quote }}
-                  key: {{ .Values.infraService.appRuntime.artifactOss.securityTokenKey | default "security-token" | quote }}
+                  name: {{ $artifactOss.securityTokenSecretName | quote }}
+                  key: {{ $artifactOss.securityTokenKey | default "security-token" | quote }}
+            {{- end }}
             {{- end }}
             {{- end }}
             {{- if eq $artifactProvider "s3" }}
@@ -431,6 +452,11 @@ spec:
               subPath: root-ca.crt
               readOnly: true
             {{- end }}
+            {{- if $ossRrsaOn }}
+            - name: rrsa-oidc-token
+              mountPath: /var/run/secrets/ack-rrsa
+              readOnly: true
+            {{- end }}
       volumes:
         {{- if .Values.infraService.fileBrowser.enabled }}
         - name: juicefs
@@ -442,6 +468,16 @@ spec:
         - name: private-ca
           configMap:
             name: {{ $privateCaConfigMap | quote }}
+        {{- end }}
+        {{- if $ossRrsaOn }}
+        {{- /* Projected OIDC token: audience is fixed to sts.aliyuncs.com (RRSA convention); kubelet rotates it. */}}
+        - name: rrsa-oidc-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: sts.aliyuncs.com
+                  expirationSeconds: 3600
+                  path: token
         {{- end }}
 ---
 apiVersion: v1

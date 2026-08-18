@@ -9,6 +9,13 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## v2026.8.31 - 2026-08-18
+
+- **Keyless OSS artifact store via RRSA (Alibaba Cloud ACK).** Optional
+  `infraService.appRuntime.artifactOss.rrsa` lets infra-service use temporary
+  STS credentials instead of a static AccessKey Secret; requires RRSA enabled
+  on the ACK cluster. Off by default; existing setups are unaffected.
+
 ## v2026.8.30 - 2026-08-18
 
 ### Teable release.2026-08-18T06-53-59Z.2682
