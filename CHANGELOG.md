@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **infra-service now logs its effective configuration at start-up.** Lines are
+  prefixed `[config]` and cover sandbox lifetime, backpressure, app
+  scale-to-zero, app cleanup, and metrics. This is what the process is actually
+  running with, which is not always what `kubectl get configmap` shows — a
+  ConfigMap edit does not reach a running pod until it restarts, and `subPath`
+  mounts never update at all. Check with
+  `kubectl logs deploy/<infra-service> | grep '\[config\]'`. No action needed.
+
 ## v2026.8.34 - 2026-08-19
 
 ### Teable release.2026-08-19T09-57-17Z.2716
