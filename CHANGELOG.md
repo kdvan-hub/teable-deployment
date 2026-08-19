@@ -9,6 +9,13 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Fixed RRSA STS exchange failing with `MissingTimestamp`.** The
+  `AssumeRoleWithOIDC` call introduced in v2026.8.31 omitted the mandatory
+  `Timestamp` common parameter, so enabling `artifactOss.rrsa` always failed.
+  No action needed beyond upgrading.
+
 ## v2026.8.32 - 2026-08-18
 
 ### Teable release.2026-08-18T10-54-07Z.2696
