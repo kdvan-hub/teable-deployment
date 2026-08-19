@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.35 - 2026-08-19
 
 - **infra-service now logs its effective configuration at start-up.** Lines are
   prefixed `[config]` and cover sandbox lifetime, backpressure, app
