@@ -9,6 +9,12 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+### Teable release.2026-08-19T09-39-21Z.2715
+
+`ghcr.io/teableio/teable:latest` now resolves to `release.2026-08-19T09-39-21Z.2715`.
+
 ## v2026.8.36 - 2026-08-19
 
 - **Git registry repositories now use far less disk.** Pushes are stored packed,
