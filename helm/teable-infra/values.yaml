@@ -375,6 +375,11 @@ gitRegistry:
   gitTimeoutMs: 120000
   trashRetentionDays: 7
   gcUtcHour: 19
+  # Housekeeping runs a full gc on a repository once its loose-object count,
+  # loose bytes, or packfile count crosses the matching threshold.
+  gcLooseObjectsThreshold: 512
+  gcLooseSizeBytes: 16777216
+  gcPacksThreshold: 25
   persistence:
     # Reuse a pre-created PVC and skip creating one (PVC lifecycle owned outside
     # the chart, e.g. restricted deploy accounts with admin-provisioned storage).

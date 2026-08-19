@@ -1694,6 +1694,12 @@ spec:
           value: '7'
         - name: GIT_REGISTRY_GC_UTC_HOUR
           value: '19'
+        - name: GIT_REGISTRY_GC_LOOSE_OBJECTS
+          value: '512'
+        - name: GIT_REGISTRY_GC_LOOSE_SIZE
+          value: '16777216'
+        - name: GIT_REGISTRY_GC_PACKS
+          value: '25'
         - name: GIT_REGISTRY_BASE_PATH
           value: "/git"
         - name: GIT_REGISTRY_JWT_PUBLIC_KEY

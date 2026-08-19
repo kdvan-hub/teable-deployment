@@ -99,6 +99,12 @@ spec:
               value: {{ $gitRegistry.trashRetentionDays | default 7 | quote }}
             - name: GIT_REGISTRY_GC_UTC_HOUR
               value: {{ $gitRegistry.gcUtcHour | default 19 | quote }}
+            - name: GIT_REGISTRY_GC_LOOSE_OBJECTS
+              value: {{ $gitRegistry.gcLooseObjectsThreshold | default 512 | quote }}
+            - name: GIT_REGISTRY_GC_LOOSE_SIZE
+              value: {{ $gitRegistry.gcLooseSizeBytes | default 16777216 | int64 | quote }}
+            - name: GIT_REGISTRY_GC_PACKS
+              value: {{ $gitRegistry.gcPacksThreshold | default 25 | quote }}
             {{- if $gitRegistry.basePath }}
             - name: GIT_REGISTRY_BASE_PATH
               value: {{ $gitRegistry.basePath | quote }}
