@@ -118,6 +118,22 @@ server:
     #       - protocol: TCP   # defaults to TCP when omitted
     #         port: 443
     additionalAllowedCidrs: []
+    # Selector-based allow rules for in-cluster platform endpoints. Use these
+    # instead of additionalAllowedCidrs when the CNI matches egress policies
+    # against the post-DNAT pod IP (e.g. Alibaba Cloud Terway): there an ipBlock
+    # allow for a Service ClusterIP never matches, and pod IPs are too ephemeral
+    # to pin. Each entry takes namespaceSelector and/or podSelector
+    # (NetworkPolicyPeer semantics) plus optional port scoping:
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         kubernetes.io/metadata.name: ingress-nginx
+    #     podSelector:
+    #       matchLabels:
+    #         app.kubernetes.io/name: ingress-nginx
+    #     ports:
+    #       - protocol: TCP   # defaults to TCP when omitted
+    #         port: 443
+    additionalAllowedPeers: []
 
   # Lifecycle API ingress. Exposes opensandbox-server to the Control Service
   # (the opensandbox-server control-plane API) when the Control Service runs

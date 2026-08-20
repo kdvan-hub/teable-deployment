@@ -89,4 +89,27 @@ spec:
     {{- fail "server.sandboxNetworkPolicy.additionalAllowedCidrs: entries must be a CIDR string or a {cidr, ports} map" }}
     {{- end }}
     {{- end }}
+    {{- /* Selector-based allow rules for in-cluster platform endpoints. On CNIs
+           that match egress policies against the post-DNAT pod IP (e.g. Alibaba
+           Cloud Terway), an ipBlock allow for a Service ClusterIP never matches
+           and pod IPs are too ephemeral to pin — allow by namespace/pod selector
+           instead. */}}
+    {{- range $policy.additionalAllowedPeers }}
+    {{- if not (kindIs "map" .) }}
+    {{- fail "server.sandboxNetworkPolicy.additionalAllowedPeers: entries must be maps with namespaceSelector and/or podSelector" }}
+    {{- end }}
+    {{- $peer := omit . "ports" }}
+    {{- if not $peer }}
+    {{- fail "server.sandboxNetworkPolicy.additionalAllowedPeers: entries require namespaceSelector and/or podSelector" }}
+    {{- end }}
+    - to:
+        - {{- toYaml $peer | nindent 10 }}
+      {{- with .ports }}
+      ports:
+        {{- range . }}
+        - protocol: {{ .protocol | default "TCP" }}
+          port: {{ required "server.sandboxNetworkPolicy.additionalAllowedPeers: `ports` entries require `port`" .port }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
 {{- end }}

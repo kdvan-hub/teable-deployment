@@ -9,6 +9,20 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Added `server.sandboxNetworkPolicy.additionalAllowedPeers` (opensandbox-server 0.5.0).**
+  Selector-based egress allow rules for the sandbox fence, targeting in-cluster
+  platform endpoints by namespace/pod selector. Use these instead of
+  `additionalAllowedCidrs` on CNIs that match egress policies against the
+  post-DNAT pod IP (e.g. Alibaba Cloud Terway), where an ipBlock allow for a
+  Service ClusterIP never matches. No action needed; existing values render
+  the same rules. Note: repackaging the subchart also brings the
+  `opensandbox-server` default-resource reduction announced in v2026.8.28 into
+  the umbrella chart — the vendored subchart had drifted from its source since
+  then, so installs relying on chart-default resources receive that change
+  starting with this release.
+
 ## v2026.8.37 - 2026-08-19
 
 ### Teable release.2026-08-19T09-39-21Z.2715
