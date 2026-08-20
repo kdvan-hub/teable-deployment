@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.38 - 2026-08-20
 
 - **Added `server.sandboxNetworkPolicy.additionalAllowedPeers` (opensandbox-server 0.5.0).**
   Selector-based egress allow rules for the sandbox fence, targeting in-cluster
