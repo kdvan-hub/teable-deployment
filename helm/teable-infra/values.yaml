@@ -517,7 +517,12 @@ infraService:
   fileBrowser:
     enabled: true
     # Environment-specific defaults: the JuiceFS PVC/PV names below come from a reference
-    # deployment; override them to match your own storage setup.
+    # deployment. Bind them to your own storage through persistentVolumeClaim.volumeName
+    # instead of renaming the claim -- the Infra console health check looks for this exact
+    # name. Whatever the sandboxes write is read back through this mount (console file
+    # browser, AI task view, and the AI Agent skills the app writes through s3Compat
+    # below), so it should resolve to the same shared filesystem the sandboxes mount
+    # -- see the Helm README, "AI Agent skills".
     pvcName: teable-agent-juicefs-monitor
     mountPath: /mnt/juicefs
     defaultPath: /teable
@@ -547,6 +552,14 @@ infraService:
       storageClassName: ""
       # Blank: do not bind to a specific PV (dynamic provisioning); set together with persistentVolume.* for a static PV.
       volumeName: ""
+  # S3-compatible object API over the fileBrowser volume, served at /s3/<bucket>/<key>
+  # on the Infra host and authenticated with the Infra API key. The Teable app stores
+  # AI Agent skills through it, so skills stay unavailable (a 404 on save) while this is
+  # off. Turn it on together with the shared filesystem the sandboxes mount, not on its
+  # own: with the object API on but no shared volume, skills save successfully and never
+  # reach the agent. The Helm README, "AI Agent skills", covers both halves. Note the
+  # bucket maps the volume root rather than a skills subtree, so an Infra API key can
+  # list, overwrite and delete the whole agent workspace through it.
   s3Compat:
     enabled: false
     buckets:
@@ -570,7 +583,8 @@ infraService:
     cpu: "2"
     memory: 4Gi
     timeoutMs: 420000
-    # Environment-specific default (JuiceFS PVC name from a reference deployment); override to match your storage.
+    # The sandbox agent volume claim, mounted to read benchmark results. The sandbox side
+    # of this name is fixed by the app, so point your storage at it rather than renaming it.
     pvcName: teable-agent-juicefs
     resultPath: /mnt/juicefs/.infra-service/benchmark/latest.json
   imagePreheat:

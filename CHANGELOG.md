@@ -9,6 +9,16 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
+## Unreleased
+
+- **Documented what AI Agent skills require.** Skills are stored as files
+  through the Infra object API, so they need `infraService.s3Compat.enabled`
+  plus one shared filesystem mounted by both Infra Service and the sandboxes --
+  see [`helm/README.md`](helm/README.md), "AI Agent skills". No action needed.
+- **Fixed `infraService.s3Compat.allowOverwrite: false` being ignored.** An
+  explicit `false` still rendered as `true`, so the object endpoint kept
+  overwriting existing objects. No action needed unless you set it.
+
 ## v2026.8.40 - 2026-08-21
 
 ### Teable release.2026-08-20T14-44-47Z.2730

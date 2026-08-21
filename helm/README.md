@@ -323,6 +323,139 @@ sets mode only on directories it creates, so directories that already exist
 with the wrong mode or owner must be fixed once by hand (or removed and left
 for the server to recreate).
 
+## AI Agent skills
+
+Skills live as files, not as database rows: the app writes them through the
+Infra Service object API and sandboxes read them back from a volume. Both
+halves have to be in place, and a default install has neither.
+
+**Turn the object API on.** `infraService.s3Compat.enabled` (default `false`)
+serves `/s3/<bucket>/<key>` off the `infraService.fileBrowser` volume, and the
+app writes the `teable-agent` bucket. While it -- or `fileBrowser.enabled` --
+is off, creating or importing a skill fails with a 404 from the Infra API.
+`fileBrowser.readOnly` also has to stay `false`, or reads keep succeeding while
+every write fails with a 500.
+
+**Give both sides the same files.** Infra Service writes to
+`<fileBrowser.mountPath>/teable/<scope>/<id>/skills/`, and every sandbox mounts
+those directories read-only from its own volume: the principal's own skills at
+`~/.teable/skills/user` (that segment is fixed, whether the principal is a user,
+an app or a bot), shared ones at `~/.teable/skills/base/<baseId>` and
+`~/.teable/skills/space/<spaceId>`, instance-wide ones at
+`~/.teable/skills/system`. Those mounts come from a *different*
+PersistentVolumeClaim -- Infra Service runs in the control-plane namespace,
+sandboxes in the sandbox namespace, and a PVC cannot be shared across
+namespaces -- so both claims have to resolve to one shared filesystem.
+
+Turn on only the first half and the failure is silent: the skill saves, the
+sandbox mount succeeds, the directory is empty, and the agent behaves as if no
+skill existed. There is no fallback delivery path. Leaving both off at least
+keeps the feature visibly unavailable.
+
+That same mount is how the Infra console reads sandbox-written data -- the file
+browser and the AI task view -- so a shared filesystem is worth wiring even if
+you never use skills.
+
+### One share, two PV/PVC pairs
+
+Any RWX-capable shared filesystem does the job -- NFS, AWS EFS, Azure Files,
+CephFS, Alibaba NAS, JuiceFS. The shape never changes: **two statically
+provisioned PV/PVC pairs pointing at the same export.**
+
+- Dynamic provisioning cannot express this, even with an RWX StorageClass: each
+  PVC receives its own volume or its own generated subdirectory, so the two
+  never meet.
+- The two PVs may differ in name, capacity and mount options. Only the share --
+  and the directory inside it -- has to be identical.
+- Keep both claim names. The sandbox-side one is fixed at `teable-agent-juicefs`
+  by the app (a historical name; the storage behind it is your choice), and the
+  control-plane one keeps the chart default `teable-agent-juicefs-monitor`,
+  which the Infra console health check looks up by name. Bind them to your
+  storage with `volumeName`, never by renaming.
+- Pre-create the sandbox-side claim. If it is missing when the first sandbox
+  starts, the sandbox engine provisions one under that name from the default
+  StorageClass, and that volume is not the one Infra Service writes to.
+- Do this at install time. A PVC is immutable once created, so an install that
+  already has these claims needs them deleted and recreated -- move the data off
+  first, and expect `pvc-protection` to hold the delete until every pod using
+  the claim is gone.
+
+An NFS example. You create three objects -- both PVs and the sandbox-side claim
+-- and leave the control-plane claim to the chart:
+
+```yaml
+# --- the volume Infra Service mounts ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: teable-agent-control
+spec:
+  accessModes: [ReadWriteMany]
+  capacity:
+    storage: 1Ti
+  nfs:
+    server: nfs.internal.example.com
+    path: /exports/teable-agent      # the same export and directory on both sides
+  persistentVolumeReclaimPolicy: Retain
+---
+# --- the volume every sandbox mounts ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: teable-agent-sandbox
+spec:
+  accessModes: [ReadWriteMany]
+  capacity:
+    storage: 1Ti
+  nfs:
+    server: nfs.internal.example.com
+    path: /exports/teable-agent      # identical to the PV above
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: teable-agent-juicefs         # fixed name, see above
+  namespace: teable-sandbox
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 1Ti
+  storageClassName: ""
+  volumeName: teable-agent-sandbox
+```
+
+The chart keeps its own claim name and binds it to the first PV:
+
+```yaml
+infraService:
+  fileBrowser:
+    enabled: true
+    persistentVolumeClaim:
+      create: true                   # keep the chart owning this claim
+      accessModes: [ReadWriteMany]
+      storage: 1Ti
+      storageClassName: ""
+      volumeName: teable-agent-control
+  s3Compat:
+    enabled: true
+```
+
+Verify end to end: create one skill in the UI, then look at both sides.
+
+```bash
+kubectl exec deploy/<release>-infra-service -n opensandbox-system -- \
+  ls /mnt/juicefs/teable                     # scope directories show up here
+kubectl get pods -n teable-sandbox           # pick a running sandbox pod
+kubectl exec <sandbox-pod> -n teable-sandbox -- \
+  ls /home/agent/.teable/skills/user         # the same skill, read-only
+```
+
+A shared volume also brings the directory-ownership handling described under
+[Shared sandbox volumes](#shared-sandbox-volumes) into play once you turn on the
+non-root sandbox switches.
+
 ## Private CA / self-signed certificates
 
 If your Teable hosts serve certificates from a private/corporate CA, sandboxes

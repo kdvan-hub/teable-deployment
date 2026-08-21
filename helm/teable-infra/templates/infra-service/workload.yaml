@@ -120,10 +120,12 @@ spec:
               value: {{ ternary "true" "false" (.Values.infraService.s3Compat.enabled | default false) | quote }}
             - name: S3_COMPAT_BUCKETS
               value: {{ .Values.infraService.s3Compat.buckets | default dict | toJson | quote }}
+            {{- /* `default` swallows an explicit `0` / `false` (Sprig treats both as empty),
+                   so gate on key presence to honor them. */}}
             - name: S3_COMPAT_MAX_UPLOAD_BYTES
-              value: {{ printf "%.0f" (float64 (.Values.infraService.s3Compat.maxUploadBytes | default .Values.infraService.fileBrowser.maxUploadBytes)) | quote }}
+              value: {{ printf "%.0f" (float64 (ternary .Values.infraService.s3Compat.maxUploadBytes .Values.infraService.fileBrowser.maxUploadBytes (hasKey .Values.infraService.s3Compat "maxUploadBytes"))) | quote }}
             - name: S3_COMPAT_ALLOW_OVERWRITE
-              value: {{ ternary "true" "false" (.Values.infraService.s3Compat.allowOverwrite | default true) | quote }}
+              value: {{ ternary "true" "false" (ternary .Values.infraService.s3Compat.allowOverwrite true (hasKey .Values.infraService.s3Compat "allowOverwrite")) | quote }}
             - name: OPENSANDBOX_RUNTIME_URL
               value: {{ .Values.infraService.opensandbox.runtimeUrl | default (include "teable-infra.infraUrl" .) | quote }}
             - name: OPENSANDBOX_PREVIEW_WILDCARD_DOMAIN

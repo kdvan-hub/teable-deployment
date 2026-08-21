@@ -118,6 +118,43 @@ kubectl logs deploy/<release>-teable -n opensandbox-system | tail -50
 A TLS verification error here means the infra certificate is not trusted by
 the Teable pod — see the certificates section above.
 
+### Creating or importing a skill fails
+
+Skills are stored as files through the Infra object API: `s3Compat.enabled`
+(off by default) served on top of `fileBrowser.enabled` (on by default), both
+under `infraService` -- see [`helm/README.md`](helm/README.md), "AI Agent
+skills". Ask the app pod what the API answers:
+
+```bash
+kubectl exec deploy/<release>-teable -n opensandbox-system -- node -e '
+fetch(process.env.TEABLE_INFRA_API_URL + "/s3/teable-agent?list-type=2&delimiter=/&max-keys=10", {
+  headers: { Authorization: "Bearer " + process.env.TEABLE_INFRA_API_KEY },
+}).then(async r => console.log(r.status, (await r.text()).slice(0, 200)))
+  .catch(e => console.log("request failed:", e.message))'
+```
+
+- `200` with an XML listing -- the API is healthy.
+- `404` saying `S3 endpoint is disabled` -- `s3Compat.enabled` is off.
+- `404` saying `JuiceFS mount is disabled` -- `fileBrowser.enabled` is off. The
+  message names JuiceFS no matter which storage you actually mounted.
+- `404` with `NoSuchBucket` -- `s3Compat.buckets` no longer maps `teable-agent`.
+- `401` -- the app and Infra Service disagree on the API key, or Infra Service
+  cannot read the `opensandbox-api-key` Secret at all (wrong namespace, missing
+  RBAC); check the Infra Service logs to tell the two apart.
+- `request failed: ...` -- the app never reached the Infra host: DNS, ingress or
+  a TLS chain it does not trust.
+
+A `200` here with saves still failing points at `fileBrowser.readOnly: true`:
+reads keep working while every write hits a read-only filesystem and returns a
+bare 500.
+
+### Skills are saved but the agent never uses them
+
+The sandbox mounts a different volume than the one Infra Service writes to:
+the mount succeeds, the skills directory inside the sandbox is empty, and
+nothing logs an error. Both must resolve to one shared filesystem -- see
+[`helm/README.md`](helm/README.md), "AI Agent skills".
+
 ### AI sessions fail right after starting: `self-signed certificate in certificate chain`
 
 The stack is healthy and the UI works, but sandboxes reject the callback to
