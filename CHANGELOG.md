@@ -19,6 +19,10 @@ release's `versions.yaml`. Hot-swappable; no action needed.
   explicit `false` still rendered as `true`, so the object endpoint kept
   overwriting existing objects. No action needed unless you set it.
 
+### Teable release.2026-08-22T03-40-44Z.2744
+
+`ghcr.io/teableio/teable:latest` now resolves to `release.2026-08-22T03-40-44Z.2744`.
+
 ## v2026.8.40 - 2026-08-21
 
 ### Teable release.2026-08-20T14-44-47Z.2730
