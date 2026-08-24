@@ -9,7 +9,7 @@ channel, with their release notes synced in. Docker installs follow `latest`
 directly; Kubernetes installs receive the refreshed pin via that platform
 release's `versions.yaml`. Hot-swappable; no action needed.
 
-## Unreleased
+## v2026.8.41 - 2026-08-21
 
 - **Documented what AI Agent skills require.** Skills are stored as files
   through the Infra object API, so they need `infraService.s3Compat.enabled`
