@@ -1,8 +1,9 @@
-   # Compose interpolates included files against this project's own .env (the repo root),
-   # not the included file's directory -- so without env_file/project_directory here,
-   # docker/all-in-one/.env (written by ./apply.sh) is invisible and every ${VAR:?...}
-   # guard in the included services fails even after apply.sh ran successfully.
+   # project_directory keeps relative paths in the included file (build context, bind
+   # mounts) resolving against docker/all-in-one rather than this file's own directory.
+   # No env_file override: interpolation is meant to use *this* project's own .env
+   # (e.g. the .env platforms like elest.io write/manage at the repo root) -- not
+   # docker/all-in-one/.env, which only exists for the standalone `cd docker/all-in-one`
+   # workflow described in docker/all-in-one/README.md.
    include:
      - path: docker/all-in-one/compose.yaml
        project_directory: docker/all-in-one
-       env_file: docker/all-in-one/.env
