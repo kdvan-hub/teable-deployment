@@ -1,2 +1,8 @@
+   # Compose interpolates included files against this project's own .env (the repo root),
+   # not the included file's directory -- so without env_file/project_directory here,
+   # docker/all-in-one/.env (written by ./apply.sh) is invisible and every ${VAR:?...}
+   # guard in the included services fails even after apply.sh ran successfully.
    include:
-     - docker/all-in-one/compose.yaml
+     - path: docker/all-in-one/compose.yaml
+       project_directory: docker/all-in-one
+       env_file: docker/all-in-one/.env
