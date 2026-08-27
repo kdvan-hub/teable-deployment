@@ -1,0 +1,2 @@
+include:
+  - docker/all-in-one/compose.server.yaml
