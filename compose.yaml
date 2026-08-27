@@ -1,0 +1,3 @@
+   include:
+     - docker/all-in-one/compose.yaml
+     - docker/all-in-one/compose.server.yaml
