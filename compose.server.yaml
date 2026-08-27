@@ -1,5 +1,4 @@
-# See compose.yaml for why env_file/project_directory are required here.
+# See compose.yaml for why there's no env_file override here.
 include:
   - path: docker/all-in-one/compose.server.yaml
     project_directory: docker/all-in-one
-    env_file: docker/all-in-one/.env
