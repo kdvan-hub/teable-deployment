@@ -1,0 +1,120 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "name": "PharKeep UI Tokens",
+  "meta": {
+    "logoBlueSource": "Sampled from supplied PharKeep logo October 2026",
+    "scope": "Suggested design defaults; app source of truth and product permissions remain unchanged"
+  },
+  "color": {
+    "brand": {
+      "value": "#0F74EC",
+      "type": "color"
+    },
+    "action": {
+      "value": "#0965CF",
+      "type": "color"
+    },
+    "actionHover": {
+      "value": "#0757B5",
+      "type": "color"
+    },
+    "selection": {
+      "value": "#EAF3FF",
+      "type": "color"
+    },
+    "canvas": {
+      "value": "#F7F9FC",
+      "type": "color"
+    },
+    "surface": {
+      "value": "#FFFFFF",
+      "type": "color"
+    },
+    "text": {
+      "value": "#15181D",
+      "type": "color"
+    },
+    "textMuted": {
+      "value": "#667085",
+      "type": "color"
+    },
+    "border": {
+      "value": "#DCE3ED",
+      "type": "color"
+    },
+    "successBg": {
+      "value": "#E9F7F0",
+      "type": "color"
+    },
+    "successText": {
+      "value": "#166B4B",
+      "type": "color"
+    },
+    "warningBg": {
+      "value": "#FFF4D8",
+      "type": "color"
+    },
+    "warningText": {
+      "value": "#925800",
+      "type": "color"
+    },
+    "neutralBg": {
+      "value": "#F1F4F8",
+      "type": "color"
+    },
+    "neutralText": {
+      "value": "#475467",
+      "type": "color"
+    },
+    "errorBg": {
+      "value": "#FDECEC",
+      "type": "color"
+    },
+    "errorText": {
+      "value": "#B42318",
+      "type": "color"
+    }
+  },
+  "space": {
+    "4": {
+      "value": "4px",
+      "type": "dimension"
+    },
+    "8": {
+      "value": "8px",
+      "type": "dimension"
+    },
+    "12": {
+      "value": "12px",
+      "type": "dimension"
+    },
+    "16": {
+      "value": "16px",
+      "type": "dimension"
+    },
+    "24": {
+      "value": "24px",
+      "type": "dimension"
+    },
+    "32": {
+      "value": "32px",
+      "type": "dimension"
+    }
+  },
+  "radius": {
+    "control": {
+      "value": "8px",
+      "type": "dimension"
+    },
+    "card": {
+      "value": "12px",
+      "type": "dimension"
+    }
+  },
+  "control": {
+    "height": {
+      "value": "40px",
+      "type": "dimension"
+    }
+  }
+}

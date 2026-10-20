@@ -1,0 +1,7 @@
+Please remember these PharKeep UI standards in this Teable Base for future conversations and design tasks:
+
+PharKeep apps are high-end, calm, light-first pharmacy operations applications. The brand/logo blue is approximately #0F74EC; use #0965CF for accessible primary buttons and links, #EAF3FF for selected states, #F7F9FC for page backgrounds, #FFFFFF for cards, #15181D for primary text, #667085 for secondary text, and #DCE3ED for borders. Keep semantic green/amber/red for true success, pending, and error states. Use one consistent font: Inter preferred, Geist acceptable when already established. Apply an 8/12/16/24/32px spacing scale, 40px controls, 8px control radius, and 12px card radius. Prefer 14px body and button text, 17–18px section headings, and 26–28px page titles.
+
+When making UI changes, reuse shared components, simplify layout and navigation, maintain accessibility, and support desktop/mobile. Preserve the original Teable data model, permissions, schedule versions, status meanings, and all working actions. On the Staff Schedule page, prevent schedule-cell values from displaying as ellipses and keep the schedule grid legible. On Manage Schedules, give clear priority to requests, drafts, released schedules, and settings. Do not confuse an approved request with a scheduled or released change.
+
+This is a design preference, not permission to change any Teable database or workflow. Please confirm that these standards have been saved for this Base.

@@ -1,0 +1,95 @@
+/* PharKeep UI foundation. Import into the application's main styles and
+   map these tokens into the existing theme when one already exists. */
+:root {
+  --pk-blue-brand: #0F74EC;
+  --pk-blue-action: #0965CF;
+  --pk-blue-action-hover: #0757B5;
+  --pk-blue-soft: #EAF3FF;
+  --pk-bg: #F7F9FC;
+  --pk-surface: #FFFFFF;
+  --pk-text: #15181D;
+  --pk-text-muted: #667085;
+  --pk-border: #DCE3ED;
+  --pk-success-bg: #E9F7F0;
+  --pk-success-text: #166B4B;
+  --pk-warning-bg: #FFF4D8;
+  --pk-warning-text: #925800;
+  --pk-neutral-bg: #F1F4F8;
+  --pk-neutral-text: #475467;
+  --pk-error-bg: #FDECEC;
+  --pk-error-text: #B42318;
+  --pk-font: Inter, Geist, ui-sans-serif, system-ui, sans-serif;
+  --pk-radius-control: 8px;
+  --pk-radius-card: 12px;
+  --pk-control-height: 40px;
+  --pk-space-1: 4px;
+  --pk-space-2: 8px;
+  --pk-space-3: 12px;
+  --pk-space-4: 16px;
+  --pk-space-6: 24px;
+  --pk-space-8: 32px;
+}
+
+.pk-app {
+  font-family: var(--pk-font);
+  color: var(--pk-text);
+  background: var(--pk-bg);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.pk-panel {
+  background: var(--pk-surface);
+  border: 1px solid var(--pk-border);
+  border-radius: var(--pk-radius-card);
+  padding: var(--pk-space-6);
+}
+.pk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--pk-control-height);
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: var(--pk-radius-control);
+  border: 1px solid transparent;
+  font: 500 14px/1.2 var(--pk-font);
+  cursor: pointer;
+  text-decoration: none;
+}
+.pk-button--primary { background: var(--pk-blue-action); color: #fff; }
+.pk-button--primary:hover { background: var(--pk-blue-action-hover); }
+.pk-button--secondary { background: #fff; color: var(--pk-text); border-color: var(--pk-border); }
+.pk-button--secondary:hover { background: var(--pk-blue-soft); }
+.pk-button:disabled { opacity: .55; cursor: not-allowed; }
+.pk-input, .pk-select {
+  box-sizing: border-box;
+  height: var(--pk-control-height);
+  max-width: 100%;
+  padding: 0 12px;
+  border-radius: var(--pk-radius-control);
+  border: 1px solid var(--pk-border);
+  background: #fff;
+  color: var(--pk-text);
+  font: 400 14px/1.4 var(--pk-font);
+}
+.pk-button:focus-visible, .pk-input:focus-visible,
+.pk-select:focus-visible, .pk-tab:focus-visible {
+  outline: 2px solid var(--pk-blue-action);
+  outline-offset: 2px;
+}
+.pk-tab[aria-selected='true'], .pk-tab[data-active='true'] {
+  background: var(--pk-blue-soft);
+  color: var(--pk-blue-action);
+}
+.pk-status { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-weight: 500; font-size: 12px; }
+.pk-status--draft { background: var(--pk-neutral-bg); color: var(--pk-neutral-text); }
+.pk-status--approved { background: var(--pk-success-bg); color: var(--pk-success-text); }
+.pk-status--pending { background: var(--pk-warning-bg); color: var(--pk-warning-text); }
+.pk-status--error { background: var(--pk-error-bg); color: var(--pk-error-text); }
+.pk-grid-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.pk-schedule-cell { white-space: nowrap; text-align: center; overflow: visible; font-variant-numeric: tabular-nums; }
+.pk-number { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .pk-panel { padding: 16px; }
+  .pk-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+}
