@@ -1,0 +1,9 @@
+Use the PharKeep UI design system for this application. Read `SKILL.md` and the referenced color, component, and quality rules if the files are accessible to you. Otherwise apply the rules in this prompt.
+
+Brand: light-first clinical UI. Logo blue #0F74EC; accessible primary action blue #0965CF; selected state #EAF3FF; canvas #F7F9FC; white cards; primary text #15181D; secondary text #667085; light border #DCE3ED. Keep green, amber, and red only for status meaning. Use Inter, or retain Geist if already used throughout the app. Use 14px body/buttons, 26–28px page titles, 17–18px section titles, 40px inputs/buttons, a 4px-based spacing scale, 8px rounded controls, and 12px cards. Use consistent navigation, layout, focus states, and component variants throughout the app.
+
+For Staff Schedule: keep the grid dominant; show the selected period; group view and filter controls; show complete schedule codes without ellipses; support day/week views on mobile; keep floating controls out of the grid; keep code meaning and staff permissions intact.
+
+For Manage Schedules: keep the same app shell; present summary cards, actionable requests, drafts, released schedules, and settings in a scannable hierarchy; use one clear primary action per task state; make filters and cards fit a 390px viewport. Keep approval, scheduling, and release distinct. Existing staff settings are schedule-version-specific unless explicitly changed by the owner.
+
+First audit the existing component system. Then propose minimal UI changes. Do not change Teable tables, auth, user permissions, workflow states, integrations, or code definitions. Implement only after the intended scope is clear. Test mobile, desktop, keyboard focus, text contrast, and schedule-cell readability. Report your changes and any untested functions.
